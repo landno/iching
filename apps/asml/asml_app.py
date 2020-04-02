@@ -7,6 +7,7 @@ from torch.utils.data import DataLoader #, Dataset
 from collections import OrderedDict
 from apps.asml.asdk_ds import AsdkDs
 from apps.asml.asml_model import AsmlModel
+from apps.common.tp_util import TpUtil
 
 class AsmlApp(object):
     def __init__(self):
@@ -18,7 +19,9 @@ class AsmlApp(object):
         print('MAML for stock market v0.0.6')
         #self.train()
         #self.evaluate_on_test_ds()
-        self.predict_example()
+        #self.predict_example()
+        tps = TpUtil.choose_trading_pairs('601006', '2007-01-01', '2007-11-30')
+        print('trading pairs: {0}, {1}'.format(tps[0], tps[1]))
         print('^_^')
 
     def train(self):
