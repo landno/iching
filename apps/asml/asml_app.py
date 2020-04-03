@@ -17,28 +17,20 @@ class AsmlApp(object):
 
     def startup(self):
         print('MAML for stock market v0.0.6')
-        #self.train()
+        self.train()
         #self.evaluate_on_test_ds()
         #self.predict_example()
-        tps = TpUtil.choose_trading_pairs('601006', '2007-01-01', '2007-11-30')
-        print('trading pairs: {0}, {1}'.format(tps[0], tps[1]))
-        print('^_^')
+        #tps = TpUtil.choose_trading_pairs('601006', '2007-01-01', '2007-11-30')
+        #print('trading pairs: {0}, {1}'.format(tps[0], tps[1]))
+        #print('^_^')
 
-    def train(self):
+    def load_dataset(self, stock_code, start_date, end_date, k_shot, q_query, n_way):
         train_data_path = './data/tp/'
-        stock_code = '601006'
-        start_date = '2006-08-01'
-        end_date = '2007-04-25'
-        meta_batch_size = 4
-        k_shot = 2
-        q_query = 1
-        inner_train_steps = 1
-        inner_lr = 0.4
-        meta_lr = 0.005
-        max_epoch = 5
-        eval_batches = 1
         ds = AsdkDs(train_data_path, stock_code, start_date, end_date, k_shot, q_query)
-        train_set, val_set = torch.utils.data.random_split(ds, [50, 8])
+        ds_len = len(ds)
+        print(ds_len)
+        test_size = int(ds_len * 0.1)
+        train_set, val_set = torch.utils.data.random_split(ds, [ds_len - test_size, test_size])
         n_way = 3
         train_loader = DataLoader(train_set,
                                 batch_size = n_way, # 這裡的 batch size 並不是 meta batch size, 而是一個 task裡面會有多少不同的
@@ -53,10 +45,25 @@ class AsmlApp(object):
                                 shuffle = True,
                                 drop_last = True)
         val_iter = iter(val_loader)
-        #print('X:{0}'.format(x))
+        return train_loader, train_iter, val_loader, val_iter
+
+    def train(self):
+        stock_code = '601006'
+        start_date = '2007-01-01'
+        end_date = '2007-11-30'
+        meta_batch_size = 4
+        k_shot = 2
+        q_query = 1
+        inner_train_steps = 1
+        inner_lr = 0.4
+        meta_lr = 0.005
+        max_epoch = 5
+        eval_batches = 1
+        n_way = 3
+        train_loader, train_iter, val_loader, val_iter = self.load_dataset(stock_code, start_date, end_date, k_shot, q_query, n_way)
         meta_model = AsmlModel(1, n_way).to(self.device)
-        print('载入已有模型......')
-        meta_model.load_state_dict(torch.load(self.chpt_file))
+        #print('载入已有模型......')
+        #meta_model.load_state_dict(torch.load(self.chpt_file))
         optimizer = torch.optim.Adam(meta_model.parameters(), lr = meta_lr)
         loss_fn = nn.CrossEntropyLoss().to(self.device)
         for epoch in range(max_epoch):
