@@ -13,6 +13,7 @@ class AsmlApp(object):
     def __init__(self):
         self.name = 'apps.asml.AsmlApp'
         self.chpt_file = './work/asml.pkl'
+        self.train_data_path = './data/tp/'
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     def startup(self):
@@ -24,9 +25,16 @@ class AsmlApp(object):
         #print('trading pairs: {0}, {1}'.format(tps[0], tps[1]))
         #print('^_^')
 
-    def load_dataset(self, stock_code, start_date, end_date, k_shot, q_query, n_way):
-        train_data_path = './data/tp/'
-        ds = AsdkDs(train_data_path, stock_code, start_date, end_date, k_shot, q_query)
+    def get_max_ds_len(self, stock_codes, start_date, end_date, k_shot, q_query, n_way):
+        max_len = 0
+        for stock_code in stock_codes:
+            ds = AsdkDs(self.train_data_path, stock_code, start_date, end_date, k_shot, q_query)
+            if len(ds) > max_len:
+                max_len = len(ds)
+        return max_len
+
+    def load_dataset(self, stock_code, start_date, end_date, max_len, k_shot, q_query, n_way):
+        ds = AsdkDs(self.train_data_path, stock_code, start_date, end_date, k_shot, q_query)
         ds_len = len(ds)
         print(ds_len)
         test_size = int(ds_len * 0.1)
@@ -48,7 +56,7 @@ class AsmlApp(object):
         return train_loader, train_iter, val_loader, val_iter
 
     def train(self):
-        stock_code = '601006'
+        stock_codes = ['601006', '600015', '600585']
         start_date = '2007-01-01'
         end_date = '2007-11-30'
         meta_batch_size = 4
@@ -60,7 +68,26 @@ class AsmlApp(object):
         max_epoch = 5
         eval_batches = 1
         n_way = 3
-        train_loader, train_iter, val_loader, val_iter = self.load_dataset(stock_code, start_date, end_date, k_shot, q_query, n_way)
+        train_loaders = []
+        train_iters = []
+        val_loaders = []
+        val_iters = []
+        max_len = self.get_max_ds_len(stock_codes, start_date, end_date, k_shot, q_query, n_way)
+        for stock_code in stock_codes:
+            print('stock_code:{0};'.format(stock_code))
+            train_loader, train_iter, val_loader, val_iter = \
+                        self.load_dataset(stock_code, start_date, \
+                        end_date, max_len, k_shot, q_query, n_way)
+            train_loaders.append(train_loader)
+            train_iters.append(train_iter)
+            val_loaders.append(val_loader)
+            val_iters.append(val_iter)
+        
+        print('max_len={0};'.format(max_len))
+        print('^_^ ok')
+        i_debug = 1
+        if 1 == i_debug:
+            return
         meta_model = AsmlModel(1, n_way).to(self.device)
         #print('载入已有模型......')
         #meta_model.load_state_dict(torch.load(self.chpt_file))
