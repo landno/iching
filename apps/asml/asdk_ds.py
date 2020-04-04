@@ -72,3 +72,12 @@ class AsdkDs(Dataset):
         stock_df.index = pd.to_datetime(stock_df.index)
         df = stock_df[start_date:end_date]
         return np.array([str(x)[:10] for x in df.index.values])
+
+    def padding_last_rec(self):
+        ''' 
+        Add the last day record to the dataset. If the number of the 
+        daily records is not eaqual, padding the 
+        last day record to make them the same length.
+        '''
+        self.X = np.append(self.X, [self.X[-1]], axis=0)
+        self.y = np.append(self.y, [self.y[-1]], axis=0)

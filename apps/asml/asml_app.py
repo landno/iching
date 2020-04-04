@@ -29,14 +29,16 @@ class AsmlApp(object):
         max_len = 0
         for stock_code in stock_codes:
             ds = AsdkDs(self.train_data_path, stock_code, start_date, end_date, k_shot, q_query)
-            if len(ds) > max_len:
-                max_len = len(ds)
+            if ds.X.shape[0] > max_len:
+                max_len = ds.X.shape[0]
         return max_len
 
     def load_dataset(self, stock_code, start_date, end_date, max_len, k_shot, q_query, n_way):
         ds = AsdkDs(self.train_data_path, stock_code, start_date, end_date, k_shot, q_query)
+        ds_num = ds.X.shape[0]
+        for i in range(ds_num, max_len):
+            ds.padding_last_rec()
         ds_len = len(ds)
-        print(ds_len)
         test_size = int(ds_len * 0.1)
         train_set, val_set = torch.utils.data.random_split(ds, [ds_len - test_size, test_size])
         n_way = 3
@@ -83,7 +85,6 @@ class AsmlApp(object):
             val_loaders.append(val_loader)
             val_iters.append(val_iter)
         
-        print('max_len={0};'.format(max_len))
         print('^_^ ok')
         i_debug = 1
         if 1 == i_debug:
