@@ -13,9 +13,12 @@ def norm_batch_tasks(batch_vals, task_num):
     return np.hstack(tuple(arrs)).mean(axis=1)
 
 def exp():
-    batch_losses = [1.1, 1.2, 1.3, 1.4, 1.5, 2.1, 2.2, 2.3, 2.4, 2.5, 3.1, 3.2, 3.3, 3.4, 3.5]
-    v = norm_batch_tasks(batch_losses, 3)
-    print('the result: {0};'.format(v))
+    batch_losses = []
+    batch_loss = [1.1, 1.2, 1.3, 1.4, 1.5]
+    batch_losses.append(batch_loss)
+    batch_loss = [2.1, 2.2, 2.3, 2.4, 2.5]
+    batch_losses.append(batch_loss)
+    print('the result: {0};'.format(batch_losses))
 
 def main():
     print('易经量化交易系统 v0.0.1')

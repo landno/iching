@@ -67,7 +67,7 @@ class AsmlApp(object):
         inner_train_steps = 1
         inner_lr = 0.4
         meta_lr = 0.005
-        max_epoch = 1
+        max_epoch = 3
         eval_batches = 1
         n_way = 3
         train_loaders = []
@@ -121,7 +121,7 @@ class AsmlApp(object):
                 txs = []
                 tys = []
                 for i in range(num_tasks):
-                    x, y, val_iters[i] = self.get_meta_batch(eval_batches, k_shot, q_query, val_loaders[i], val_iter[i])
+                    x, y, val_iters[i] = self.get_meta_batch(eval_batches, k_shot, q_query, val_loaders[i], val_iters[i])
                     txs.append(x)
                     tys.append(y)
                 _, acc = self.train_batch(meta_model, optimizer, txs, tys, n_way, k_shot, q_query, loss_fn, inner_train_steps = 3, train = False) # testing時，我們更新三次 inner-step
@@ -225,15 +225,25 @@ class AsmlApp(object):
 
     
     
-    def norm_batch_tasks(self, batch_vals, task_num):
-        print('##### batch_vals: {0};'.format(batch_vals))
-        arrs = []
-        batch_size = len(batch_vals) // task_num
-        for i in range(task_num):
-            item = torch.tensor(batch_vals[i*batch_size : (i+1)*batch_size])
-            print('item: {0}; {1}'.format(type(item), item))
-            arrs.append(item)
-        return tuple(torch.stack(tuple(arrs), axis=1).mean(axis=1))
+    def norm_task_loss(self, batch_losses):
+        task_num = len(batch_losses)
+        batch_size = len(batch_losses[0])
+        for i in range(1, task_num):
+            for j in range(batch_size):
+                batch_losses[0][j].add(batch_losses[i][j])
+        for j in range(batch_size):
+            batch_losses[0][j] *= 1 / task_num
+        return batch_losses[0]
+
+    def norm_task_acc(self, batch_accs):
+        task_num = len(batch_accs)
+        batch_size = len(batch_accs[0])
+        for i in range(1, task_num):
+            for j in range(batch_size):
+                batch_accs[0][j] += batch_accs[i][j]
+        for j in range(batch_size):
+            batch_accs[0][j] *= 1 / task_num
+        return batch_accs[0]
 
     def train_batch(self, model, optimizer, xs, ys, n_way, k_shot, 
                 q_query, loss_fn, inner_train_steps= 1, 
@@ -253,6 +263,8 @@ class AsmlApp(object):
         batch_losses = []
         batch_accs = []
         for i in range(task_len):
+            batch_loss = []
+            batch_acc = []
             for meta_batch, label in zip(xs[i], ys[i]):
                 train_set = meta_batch[:n_way*k_shot] # train_set 是我們拿來 update inner loop 參數的 data
                 train_label = label[:n_way*k_shot]
@@ -273,11 +285,12 @@ class AsmlApp(object):
                     # 這裡是用剛剛算出的 ∇loss 來 update θ 變成 θ'
                 logits = model.functional_forward(val_set, fast_weights) # 這裡用 val_set 和 θ' 算 logit
                 val = criterion(logits, val_label)
-                batch_losses.append(val)                      # 這裡用 val_set 和 θ' 算 loss
-                print('batch_losses.append: {0}: {1};'.format(i, val))
-                batch_accs.append(np.asarray([torch.argmax(logits, -1).cpu().numpy() == val_label.cpu().numpy()]).mean()) # 算 accuracy
-        task_loss = self.norm_batch_tasks(batch_losses, task_len)
-        task_acc = self.norm_batch_tasks(batch_accs, task_len)
+                batch_loss.append(val)                      # 這裡用 val_set 和 θ' 算 loss
+                batch_acc.append(np.asarray([torch.argmax(logits, -1).cpu().numpy() == val_label.cpu().numpy()]).mean()) # 算 accuracy
+            batch_losses.append(batch_loss)
+            batch_accs.append(batch_acc)
+        task_loss = self.norm_task_loss(batch_losses)
+        task_acc = self.norm_task_acc(batch_accs)
         model.train()
         optimizer.zero_grad()
         meta_batch_loss = torch.stack(task_loss).mean() # 我們要用一整個 batch 的 loss 來 update θ (不是 θ')
