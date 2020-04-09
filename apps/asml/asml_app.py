@@ -58,7 +58,7 @@ class AsmlApp(object):
         for stock_code in stock_codes:
             print('stock_code:{0};'.format(stock_code))
             train_loader, train_iter, val_loader, val_iter = \
-                        self.load_dataset(stock_code, start_date, \
+                        self.load_dataset_meta(stock_code, start_date, \
                         end_date, max_len, k_shot, q_query, n_way)
             train_loaders.append(train_loader)
             train_iters.append(train_iter)
@@ -251,7 +251,33 @@ class AsmlApp(object):
                 max_len = ds.X.shape[0]
         return max_len
 
-    def load_dataset(self, stock_code, start_date, end_date, max_len, k_shot, q_query, n_way):
+    def load_dataset_meta(self, stock_code, start_date, end_date, max_len, k_shot, q_query, n_way):
+        ds = AsdkDs(self.train_data_path, stock_code, start_date, end_date, k_shot, q_query)
+        ds_num = ds.X.shape[0]
+        for i in range(ds_num, max_len):
+            ds.padding_last_rec()
+        ds_len = len(ds)
+        test_size = int(ds_len * 0.1)
+        train_set, val_set = torch.utils.data.random_split(ds, [ds_len - test_size, test_size])
+        n_way = 3
+        train_loader = DataLoader(train_set,
+                                batch_size = n_way, # 這裡的 batch size 並不是 meta batch size, 而是一個 task裡面會有多少不同的
+                                                    # characters，也就是 few-shot classifiecation 的 n_way
+                                num_workers = 1,
+                                shuffle = True,
+                                drop_last = True)
+        train_iter = iter(train_loader)
+        val_loader = DataLoader(val_set,
+                                batch_size = n_way,
+                                num_workers = 1,
+                                shuffle = True,
+                                drop_last = True)
+        val_iter = iter(val_loader)
+        return train_loader, train_iter, val_loader, val_iter
+
+        
+
+    def load_dataset_product(self, stock_code, start_date, end_date, k_shot, q_query, n_way):
         ds = AsdkDs(self.train_data_path, stock_code, start_date, end_date, k_shot, q_query)
         ds_num = ds.X.shape[0]
         for i in range(ds_num, max_len):

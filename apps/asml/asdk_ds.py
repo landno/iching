@@ -7,18 +7,21 @@ from torch.utils.data import DataLoader, Dataset
 class AsdkDs(Dataset):
     def __init__(self, data_dir, 
                 stock_code, start_date, end_date, 
-                k_way, q_query):
-        self.n = k_way + q_query
+                k_way, q_query, n=0):
+        if 0 == n:
+            self.n = k_way + q_query
+        else:
+            self.n = n
         #
         self.data_dir = data_dir
         stock_df = pd.read_csv('./data/tp/sh{0}_trend.csv'.format(stock_code), index_col='date')
         stock_df.index = pd.to_datetime(stock_df.index)
         df = stock_df[start_date:end_date]
         raw_ds = df.iloc[:, :].values
-        self.X, self.y, self.X_raw, self.X_mu, self.X_std = AsdkDs.get_ds_by_raw_ds(raw_ds, k_way, q_query)
+        self.X, self.y, self.X_raw, self.X_mu, self.X_std = AsdkDs.get_ds_by_raw_ds(raw_ds)
 
     @staticmethod
-    def get_ds_by_raw_ds(raw_ds, k_way, q_query):
+    def get_ds_by_raw_ds(raw_ds):
         X_raw = []
         y_raw = []
         raw_ds_size = raw_ds.shape[0]
