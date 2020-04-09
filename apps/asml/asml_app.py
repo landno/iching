@@ -17,47 +17,27 @@ class AsmlApp(object):
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     def startup(self):
-        print('MAML for stock market v0.0.6')
-        self.train()
+        print('MAML for stock market v0.0.7')
+        self.train_meta()
         #self.evaluate_on_test_ds()
         #self.predict_example()
         #tps = TpUtil.choose_trading_pairs('601006', '2007-01-01', '2007-11-30')
         #print('trading pairs: {0}, {1}'.format(tps[0], tps[1]))
         #print('^_^')
 
-    def get_max_ds_len(self, stock_codes, start_date, end_date, k_shot, q_query, n_way):
-        max_len = 0
-        for stock_code in stock_codes:
-            ds = AsdkDs(self.train_data_path, stock_code, start_date, end_date, k_shot, q_query)
-            if ds.X.shape[0] > max_len:
-                max_len = ds.X.shape[0]
-        return max_len
-
-    def load_dataset(self, stock_code, start_date, end_date, max_len, k_shot, q_query, n_way):
-        ds = AsdkDs(self.train_data_path, stock_code, start_date, end_date, k_shot, q_query)
-        ds_num = ds.X.shape[0]
-        for i in range(ds_num, max_len):
-            ds.padding_last_rec()
-        ds_len = len(ds)
-        test_size = int(ds_len * 0.1)
-        train_set, val_set = torch.utils.data.random_split(ds, [ds_len - test_size, test_size])
+    def train_product(self):
+        ''' train the model trained by MAML '''
         n_way = 3
-        train_loader = DataLoader(train_set,
-                                batch_size = n_way, # 這裡的 batch size 並不是 meta batch size, 而是一個 task裡面會有多少不同的
-                                                    # characters，也就是 few-shot classifiecation 的 n_way
-                                num_workers = 1,
-                                shuffle = True,
-                                drop_last = True)
-        train_iter = iter(train_loader)
-        val_loader = DataLoader(val_set,
-                                batch_size = n_way,
-                                num_workers = 1,
-                                shuffle = True,
-                                drop_last = True)
-        val_iter = iter(val_loader)
-        return train_loader, train_iter, val_loader, val_iter
+        meta_lr = 0.005
+        max_epoch = 3
+        model = AsmlModel(1, n_way).to(self.device)
+        optimizer = torch.optim.Adam(model.parameters(), lr = meta_lr)
+        loss_fn = nn.CrossEntropyLoss().to(self.device)
+        for epoch in range(max_epoch):
+            loss = []
+            acc = []
 
-    def train(self):
+    def train_meta(self):
         stock_codes = ['601006', '600015', '600585']
         start_date = '2007-01-01'
         end_date = '2007-11-30'
@@ -104,7 +84,7 @@ class AsmlApp(object):
                                 train_loaders[i], train_iters[i])
                     xs.append(x)
                     ys.append(y)
-                meta_loss, acc = self.train_batch(meta_model, optimizer, xs, ys, n_way, k_shot, q_query, loss_fn)
+                meta_loss, acc = self.train_batch_meta(meta_model, optimizer, xs, ys, n_way, k_shot, q_query, loss_fn)
                 train_meta_loss.append(meta_loss.item())
                 train_acc.append(acc)
 
@@ -124,7 +104,7 @@ class AsmlApp(object):
                     x, y, val_iters[i] = self.get_meta_batch(eval_batches, k_shot, q_query, val_loaders[i], val_iters[i])
                     txs.append(x)
                     tys.append(y)
-                _, acc = self.train_batch(meta_model, optimizer, txs, tys, n_way, k_shot, q_query, loss_fn, inner_train_steps = 3, train = False) # testing時，我們更新三次 inner-step
+                _, acc = self.train_batch_meta(meta_model, optimizer, txs, tys, n_way, k_shot, q_query, loss_fn, inner_train_steps = 3, train = False) # testing時，我們更新三次 inner-step
                 val_acc.append(acc)
             print("  Validation accuracy: ", np.mean(val_acc))
         torch.save(meta_model.state_dict(), self.chpt_file)
@@ -156,7 +136,7 @@ class AsmlApp(object):
 
         for test_step in tqdm(range(len(test_loader) // (test_batches))):
             x, y, val_iter = self.get_meta_batch(test_batches, k_shot, q_query, test_loader, test_iter)
-            _, acc = self.train_batch(meta_model, optimizer, x, y, n_way, k_shot, q_query, loss_fn, inner_train_steps = 3, train = False) # testing時，我們更新三次 inner-step
+            _, acc = self.train_batch_meta(meta_model, optimizer, x, y, n_way, k_shot, q_query, loss_fn, inner_train_steps = 3, train = False) # testing時，我們更新三次 inner-step
             test_acc.append(acc)
         print("  Testing accuracy: ", np.mean(test_acc))
 
@@ -194,15 +174,6 @@ class AsmlApp(object):
         q_query = 1
         test_batches = 2
         meta_lr = 0.005
-        '''
-        test_loader = DataLoader(AsdkDs(test_data_path, stock_code, start_date, end_date, k_shot, q_query),
-                                batch_size = n_way,
-                                num_workers = 1,
-                                shuffle = True,
-                                drop_last = True)
-        test_iter = iter(test_loader)
-        test_acc = []
-        '''
         X = torch.from_numpy(X.reshape(1, 1, 25)).to(self.device)
         meta_model = AsmlModel(1, n_way).to(self.device)
         meta_model.load_state_dict(torch.load(self.chpt_file))
@@ -215,37 +186,9 @@ class AsmlApp(object):
         labels = torch.argmax(logits, dim=1)
         print('predict label: {0};'.format(labels[0]))
 
-        '''
-        for test_step in tqdm(range(len(test_loader) // (test_batches))):
-            x, y, val_iter = self.get_meta_batch(test_batches, k_shot, q_query, test_loader, test_iter)
-            _, acc = self.train_batch(meta_model, optimizer, x, y, n_way, k_shot, q_query, loss_fn, inner_train_steps = 3, train = False) # testing時，我們更新三次 inner-step
-            test_acc.append(acc)
-        print("  Testing accuracy: ", np.mean(test_acc))     
-        '''   
-
     
-    
-    def norm_task_loss(self, batch_losses):
-        task_num = len(batch_losses)
-        batch_size = len(batch_losses[0])
-        for i in range(1, task_num):
-            for j in range(batch_size):
-                batch_losses[0][j].add(batch_losses[i][j])
-        for j in range(batch_size):
-            batch_losses[0][j] *= 1 / task_num
-        return batch_losses[0]
 
-    def norm_task_acc(self, batch_accs):
-        task_num = len(batch_accs)
-        batch_size = len(batch_accs[0])
-        for i in range(1, task_num):
-            for j in range(batch_size):
-                batch_accs[0][j] += batch_accs[i][j]
-        for j in range(batch_size):
-            batch_accs[0][j] *= 1 / task_num
-        return batch_accs[0]
-
-    def train_batch(self, model, optimizer, xs, ys, n_way, k_shot, 
+    def train_batch_meta(self, model, optimizer, xs, ys, n_way, k_shot, 
                 q_query, loss_fn, inner_train_steps= 1, 
                 inner_lr = 0.4, train = True):
         """
@@ -300,6 +243,38 @@ class AsmlApp(object):
         task_acc = np.mean(task_acc)
         return meta_batch_loss, task_acc
 
+    def get_max_ds_len(self, stock_codes, start_date, end_date, k_shot, q_query, n_way):
+        max_len = 0
+        for stock_code in stock_codes:
+            ds = AsdkDs(self.train_data_path, stock_code, start_date, end_date, k_shot, q_query)
+            if ds.X.shape[0] > max_len:
+                max_len = ds.X.shape[0]
+        return max_len
+
+    def load_dataset(self, stock_code, start_date, end_date, max_len, k_shot, q_query, n_way):
+        ds = AsdkDs(self.train_data_path, stock_code, start_date, end_date, k_shot, q_query)
+        ds_num = ds.X.shape[0]
+        for i in range(ds_num, max_len):
+            ds.padding_last_rec()
+        ds_len = len(ds)
+        test_size = int(ds_len * 0.1)
+        train_set, val_set = torch.utils.data.random_split(ds, [ds_len - test_size, test_size])
+        n_way = 3
+        train_loader = DataLoader(train_set,
+                                batch_size = n_way, # 這裡的 batch size 並不是 meta batch size, 而是一個 task裡面會有多少不同的
+                                                    # characters，也就是 few-shot classifiecation 的 n_way
+                                num_workers = 1,
+                                shuffle = True,
+                                drop_last = True)
+        train_iter = iter(train_loader)
+        val_loader = DataLoader(val_set,
+                                batch_size = n_way,
+                                num_workers = 1,
+                                shuffle = True,
+                                drop_last = True)
+        val_iter = iter(val_loader)
+        return train_loader, train_iter, val_loader, val_iter
+
     def get_meta_batch(self, meta_batch_size, k_shot, q_query, data_loader, iterator):
         data = []
         label = []
@@ -321,3 +296,23 @@ class AsmlApp(object):
             task_label = torch.cat((train_label, val_label), 0)
             label.append(task_label)
         return torch.stack(data).to(self.device), torch.stack(label).to(self.device), iterator
+    
+    def norm_task_loss(self, batch_losses):
+        task_num = len(batch_losses)
+        batch_size = len(batch_losses[0])
+        for i in range(1, task_num):
+            for j in range(batch_size):
+                batch_losses[0][j].add(batch_losses[i][j])
+        for j in range(batch_size):
+            batch_losses[0][j] *= 1 / task_num
+        return batch_losses[0]
+
+    def norm_task_acc(self, batch_accs):
+        task_num = len(batch_accs)
+        batch_size = len(batch_accs[0])
+        for i in range(1, task_num):
+            for j in range(batch_size):
+                batch_accs[0][j] += batch_accs[i][j]
+        for j in range(batch_size):
+            batch_accs[0][j] *= 1 / task_num
+        return batch_accs[0]
