@@ -18,24 +18,33 @@ class AsmlApp(object):
 
     def startup(self):
         print('MAML for stock market v0.0.7')
-        self.train_meta()
+        #self.train_meta()
         #self.evaluate_on_test_ds()
         #self.predict_example()
         #tps = TpUtil.choose_trading_pairs('601006', '2007-01-01', '2007-11-30')
         #print('trading pairs: {0}, {1}'.format(tps[0], tps[1]))
         #print('^_^')
+        self.train_product()
 
     def train_product(self):
         ''' train the model trained by MAML '''
         n_way = 3
         meta_lr = 0.005
         max_epoch = 3
+        stock_code = '601006'
+        start_date = '2007-12-01'
+        end_date = '2007-12-31'
+        n_way = 3
+        train_loader, train_iter, val_loader, val_iter = \
+                        self.load_dataset_product(stock_code, start_date, \
+                        end_date, n_way)
         model = AsmlModel(1, n_way).to(self.device)
         optimizer = torch.optim.Adam(model.parameters(), lr = meta_lr)
         loss_fn = nn.CrossEntropyLoss().to(self.device)
-        for epoch in range(max_epoch):
-            loss = []
-            acc = []
+        #for epoch in range(max_epoch):
+        #    loss = []
+        #    acc = []
+        print('^_^ v0.0.1')
 
     def train_meta(self):
         stock_codes = ['601006', '600015', '600585']
@@ -277,11 +286,8 @@ class AsmlApp(object):
 
         
 
-    def load_dataset_product(self, stock_code, start_date, end_date, k_shot, q_query, n_way):
-        ds = AsdkDs(self.train_data_path, stock_code, start_date, end_date, k_shot, q_query)
-        ds_num = ds.X.shape[0]
-        for i in range(ds_num, max_len):
-            ds.padding_last_rec()
+    def load_dataset_product(self, stock_code, start_date, end_date, n_way):
+        ds = AsdkDs(self.train_data_path, stock_code, start_date, end_date, 0, 0, 1)
         ds_len = len(ds)
         test_size = int(ds_len * 0.1)
         train_set, val_set = torch.utils.data.random_split(ds, [ds_len - test_size, test_size])
