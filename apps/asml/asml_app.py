@@ -44,14 +44,6 @@ class AsmlApp(object):
         train_loader, train_iter, val_loader, val_iter = \
                         self.load_dataset_product(stock_code, start_date, \
                         end_date, 1)
-
-        i_debug = 1
-        if 1 == i_debug:
-            x, y, train_iter = self.get_product_batch(
-                                batch_size, k_shot, q_query, 
-                                train_loader, train_iter)
-            print('x: {0}; y:{1};'.format(x.shape, y.shape))
-            return
         model = AsmlModel(1, n_way).to(self.device)
         optimizer = torch.optim.Adam(model.parameters(), lr = meta_lr)
         loss_fn = nn.CrossEntropyLoss().to(self.device)
@@ -60,7 +52,6 @@ class AsmlApp(object):
             train_loss = []
             train_acc = []
             for step in tqdm(range(len(train_loader) // (batch_size))): # 這裡的 step 是一次 meta-gradinet update step
-                print('#### step:{0}'.format(step))
                 x, y, train_iter = self.get_product_batch(
                                 batch_size, k_shot, q_query, 
                                 train_loader, train_iter)
@@ -95,12 +86,9 @@ class AsmlApp(object):
         k_shot: 每個類別在 training 的時候會有多少張照片
         q_query: 在 testing 時，每個類別會用多少張照片 update
         """
-        print('##### k_shot={0}; q_query={1};'.format(k_shot, q_query))
-        print('##### x: {0}; y{1};'.format(x.shape, y.shape))
         criterion = loss_fn
         for meta_batch, label in zip(x, y):
             train_set = meta_batch[:n_way*k_shot] # train_set 是我們拿來 update inner loop 參數的 data
-            print('##### train_set: {0}; {1}'.format(type(train_set), train_set.shape))
             train_label = label[:n_way*k_shot]
             fast_weights = OrderedDict(model.named_parameters()) # 在 inner loop update 參數時，
             logits = model.functional_forward(train_set, fast_weights)
@@ -116,12 +104,10 @@ class AsmlApp(object):
     def get_product_batch(self, batch_size, k_shot, q_query, data_loader, iterator):
         data = []
         label = []
-        print('##### k_shot={0};'.format(k_shot))
         for i in range(batch_size):
             try:
                 task_data, task_label = iterator.next()  # 一筆 task_data 就是一個 task 裡面的 data，
                 #大小是 [n_way, k_shot+q_query, 1, 28, 28]
-                print('##### {2} task_data: {0}; task_label: {1}'.format(task_data.shape, task_label.shape, i))
             except StopIteration:
                 iterator = iter(data_loader)
                 task_data, task_label = iterator.next()
