@@ -4,7 +4,7 @@ import pandas as pd
 import torch
 from torch.utils.data import DataLoader, Dataset
 
-class AsdkDs(Dataset):
+class AsdkProductDs(Dataset):
     def __init__(self, data_dir, 
                 stock_code, start_date, end_date, 
                 k_way, q_query, n=0):
@@ -18,7 +18,7 @@ class AsdkDs(Dataset):
         stock_df.index = pd.to_datetime(stock_df.index)
         df = stock_df[start_date:end_date]
         raw_ds = df.iloc[:, :].values
-        self.X, self.y, self.X_raw, self.X_mu, self.X_std = AsdkDs.get_ds_by_raw_ds(raw_ds)
+        self.X, self.y, self.X_raw, self.X_mu, self.X_std = AsdkProductDs.get_ds_by_raw_ds(raw_ds)
 
     @staticmethod
     def get_ds_by_raw_ds(raw_ds):

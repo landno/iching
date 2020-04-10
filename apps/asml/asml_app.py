@@ -5,7 +5,8 @@ import torch.nn as nn
 from tqdm import tqdm
 from torch.utils.data import DataLoader #, Dataset
 from collections import OrderedDict
-from apps.asml.asdk_ds import AsdkDs
+from apps.asml.asdk_meta_ds import AsdkMetaDs
+from apps.asml.asdk_product_ds import AsdkProductDs
 from apps.asml.asml_model import AsmlModel
 from apps.common.tp_util import TpUtil
 
@@ -42,7 +43,15 @@ class AsmlApp(object):
         eval_batches = 1
         train_loader, train_iter, val_loader, val_iter = \
                         self.load_dataset_product(stock_code, start_date, \
-                        end_date, n_way)
+                        end_date, 1)
+
+        i_debug = 1
+        if 1 == i_debug:
+            x, y, train_iter = self.get_product_batch(
+                                batch_size, k_shot, q_query, 
+                                train_loader, train_iter)
+            print('x: {0}; y:{1};'.format(x.shape, y.shape))
+            return
         model = AsmlModel(1, n_way).to(self.device)
         optimizer = torch.optim.Adam(model.parameters(), lr = meta_lr)
         loss_fn = nn.CrossEntropyLoss().to(self.device)
@@ -68,12 +77,86 @@ class AsmlApp(object):
                 len(val_loader), (eval_batches)
             ))
             for eval_step in tqdm(range(len(val_loader) // (eval_batches))):
-                x, y, val_iters[i] = self.get_product_batch(eval_batches, k_shot, q_query, val_loaders[i], val_iters[i])
+                x, y, val_iter = self.get_product_batch(eval_batches, k_shot, q_query, val_loader, val_iter)
                 _, acc = self.train_product_batch(model, optimizer, x, y, n_way, k_shot, q_query, loss_fn, inner_train_steps = 3, train = False) # testing時，我們更新三次 inner-step
                 val_acc.append(acc)
             print("  Validation accuracy: ", np.mean(val_acc))
         torch.save(model.state_dict(), self.chpt_product_file)
-        print('^_^ v0.0.5')
+        print('^_^ v0.0.6')
+
+    def train_product_batch(self, model, optimizer, x, y, n_way, k_shot, 
+                q_query, loss_fn, inner_train_steps= 1, 
+                inner_lr = 0.4, train = True):
+        """
+        Args:
+        x is the input omniglot images for a meta_step, shape = 
+                [batch_size, n_way * (k_shot + q_query), 1, 28, 28]
+        n_way: 每個分類的 task 要有幾個 class
+        k_shot: 每個類別在 training 的時候會有多少張照片
+        q_query: 在 testing 時，每個類別會用多少張照片 update
+        """
+        print('##### k_shot={0}; q_query={1};'.format(k_shot, q_query))
+        print('##### x: {0}; y{1};'.format(x.shape, y.shape))
+        criterion = loss_fn
+        for meta_batch, label in zip(x, y):
+            train_set = meta_batch[:n_way*k_shot] # train_set 是我們拿來 update inner loop 參數的 data
+            print('##### train_set: {0}; {1}'.format(type(train_set), train_set.shape))
+            train_label = label[:n_way*k_shot]
+            fast_weights = OrderedDict(model.named_parameters()) # 在 inner loop update 參數時，
+            logits = model.functional_forward(train_set, fast_weights)
+            loss = criterion(logits, train_label)
+        model.train()
+        optimizer.zero_grad()
+        if train:
+            loss.backward()
+            optimizer.step()
+        task_acc = np.asarray([torch.argmax(logits, -1).cpu().numpy() == train_label.cpu().numpy()]).mean()
+        return loss, task_acc
+
+    def get_product_batch(self, batch_size, k_shot, q_query, data_loader, iterator):
+        data = []
+        label = []
+        print('##### k_shot={0};'.format(k_shot))
+        for i in range(batch_size):
+            try:
+                task_data, task_label = iterator.next()  # 一筆 task_data 就是一個 task 裡面的 data，
+                #大小是 [n_way, k_shot+q_query, 1, 28, 28]
+                print('##### {2} task_data: {0}; task_label: {1}'.format(task_data.shape, task_label.shape, i))
+            except StopIteration:
+                iterator = iter(data_loader)
+                task_data, task_label = iterator.next()
+            train_data = task_data[:, :k_shot].reshape(-1, 1, 25)
+            val_data = task_data[:, k_shot:].reshape(-1, 1, 25)
+            task_data = torch.cat((train_data, val_data), 0)
+            data.append(task_data)
+            train_label = task_label[:, :k_shot]
+            train_label = train_label.reshape((train_label.shape[0] * train_label.shape[1]))
+            val_label = task_label[:, k_shot:]
+            val_label = val_label.reshape((val_label.shape[0]*val_label.shape[1]))
+            task_label = torch.cat((train_label, val_label), 0)
+            label.append(task_label)
+        return torch.stack(data).to(self.device), torch.stack(label).to(self.device), iterator
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     def train_meta(self):
         stock_codes = ['601006', '600015', '600585']
@@ -159,7 +242,7 @@ class AsmlApp(object):
         q_query = 1
         test_batches = 2
         meta_lr = 0.005
-        test_loader = DataLoader(AsdkDs(test_data_path, stock_code, start_date, end_date, k_shot, q_query),
+        test_loader = DataLoader(AsdkMetaDs(test_data_path, stock_code, start_date, end_date, k_shot, q_query),
                                 batch_size = n_way,
                                 num_workers = 1,
                                 shuffle = True,
@@ -186,7 +269,7 @@ class AsmlApp(object):
         n_way = 3
         k_shot = 1
         q_query = 1
-        ds = AsdkDs(test_data_path, stock_code, start_date, end_date, k_shot, q_query)
+        ds = AsdkMetaDs(test_data_path, stock_code, start_date, end_date, k_shot, q_query)
         X_mu = ds.X_mu
         X_std = ds.X_std
         k_shot = 1
@@ -198,7 +281,7 @@ class AsmlApp(object):
             [5.73, 5.79, 5.64, 5.66, 79173885, 0],
             [5.64, 5.96, 5.59, 5.88, 126376467, 0]
         ])
-        X, _, X_raw = AsdkDs.get_ds_by_raw_ds1(raw_ds, k_shot, q_query, X_mu, X_std)
+        X, _, X_raw = AsdkMetaDs.get_ds_by_raw_ds1(raw_ds, k_shot, q_query, X_mu, X_std)
         self.predict(X)
 
     def predict(self, X):
@@ -224,7 +307,6 @@ class AsmlApp(object):
         labels = torch.argmax(logits, dim=1)
         print('predict label: {0};'.format(labels[0]))
 
-    
 
     def train_meta_batch(self, model, optimizer, xs, ys, n_way, k_shot, 
                 q_query, loss_fn, inner_train_steps= 1, 
@@ -285,71 +367,6 @@ class AsmlApp(object):
 
 
 
-    def train_product_batch(self, model, optimizer, x, y, n_way, k_shot, 
-                q_query, loss_fn, inner_train_steps= 1, 
-                inner_lr = 0.4, train = True):
-        """
-        Args:
-        x is the input omniglot images for a meta_step, shape = 
-                [batch_size, n_way * (k_shot + q_query), 1, 28, 28]
-        n_way: 每個分類的 task 要有幾個 class
-        k_shot: 每個類別在 training 的時候會有多少張照片
-        q_query: 在 testing 時，每個類別會用多少張照片 update
-        """
-        criterion = loss_fn
-        for meta_batch, label in zip(x, y):
-            train_set = meta_batch[:n_way*k_shot] # train_set 是我們拿來 update inner loop 參數的 data
-            train_label = label[:n_way*k_shot]
-            val_set = meta_batch[n_way*k_shot:]   # val_set 是我們拿來 update outer loop 參數的 data
-            val_label = label[n_way*k_shot:]
-            fast_weights = OrderedDict(model.named_parameters()) # 在 inner loop update 參數時，
-            logits = model.functional_forward(train_set, fast_weights)
-            loss = criterion(logits, train_label)
-        model.train()
-        optimizer.zero_grad()
-        if train:
-            loss.backward()
-            optimizer.step()
-        task_acc = np.asarray([torch.argmax(logits, -1).cpu().numpy() == val_label.cpu().numpy()]).mean()
-        return loss, task_acc
-
-    def get_product_batch(self, batch_size, k_shot, q_query, data_loader, iterator):
-        data = []
-        label = []
-        for i in range(batch_size):
-            try:
-                task_data, task_label = iterator.next()  # 一筆 task_data 就是一個 task 裡面的 data，
-                #大小是 [n_way, k_shot+q_query, 1, 28, 28]
-            except StopIteration:
-                iterator = iter(data_loader)
-                task_data, task_label = iterator.next()
-            train_data = task_data[:, :k_shot].reshape(-1, 1, 25)
-            val_data = task_data[:, k_shot:].reshape(-1, 1, 25)
-            task_data = torch.cat((train_data, val_data), 0)
-            data.append(task_data)
-            train_label = task_label[:, :k_shot]
-            train_label = train_label.reshape((train_label.shape[0] * train_label.shape[1]))
-            val_label = task_label[:, k_shot:]
-            val_label = val_label.reshape((val_label.shape[0]*val_label.shape[1]))
-            task_label = torch.cat((train_label, val_label), 0)
-            label.append(task_label)
-        return torch.stack(data).to(self.device), torch.stack(label).to(self.device), iterator
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -367,13 +384,13 @@ class AsmlApp(object):
     def get_max_ds_len(self, stock_codes, start_date, end_date, k_shot, q_query, n_way):
         max_len = 0
         for stock_code in stock_codes:
-            ds = AsdkDs(self.train_data_path, stock_code, start_date, end_date, k_shot, q_query)
+            ds = AsdkMetaDs(self.train_data_path, stock_code, start_date, end_date, k_shot, q_query)
             if ds.X.shape[0] > max_len:
                 max_len = ds.X.shape[0]
         return max_len
 
     def load_dataset_meta(self, stock_code, start_date, end_date, max_len, k_shot, q_query, n_way):
-        ds = AsdkDs(self.train_data_path, stock_code, start_date, end_date, k_shot, q_query)
+        ds = AsdkMetaDs(self.train_data_path, stock_code, start_date, end_date, k_shot, q_query)
         ds_num = ds.X.shape[0]
         for i in range(ds_num, max_len):
             ds.padding_last_rec()
@@ -399,11 +416,10 @@ class AsmlApp(object):
         
 
     def load_dataset_product(self, stock_code, start_date, end_date, n_way):
-        ds = AsdkDs(self.train_data_path, stock_code, start_date, end_date, 0, 0, 1)
+        ds = AsdkProductDs(self.train_data_path, stock_code, start_date, end_date, 0, 0, 1)
         ds_len = len(ds)
         test_size = int(ds_len * 0.1)
         train_set, val_set = torch.utils.data.random_split(ds, [ds_len - test_size, test_size])
-        n_way = 3
         train_loader = DataLoader(train_set,
                                 batch_size = n_way, # 這裡的 batch size 並不是 meta batch size, 而是一個 task裡面會有多少不同的
                                                     # characters，也就是 few-shot classifiecation 的 n_way
