@@ -26,7 +26,8 @@ class AsmlApp(object):
         #tps = TpUtil.choose_trading_pairs('601006', '2007-01-01', '2007-11-30')
         #print('trading pairs: {0}, {1}'.format(tps[0], tps[1]))
         #print('^_^')
-        self.train_product()
+        #self.train_product()
+        self.predict_product_example()
 
     def train_product(self):
         ''' train the model trained by MAML '''
@@ -74,6 +75,44 @@ class AsmlApp(object):
             print("  Validation accuracy: ", np.mean(val_acc))
         torch.save(model.state_dict(), self.chpt_product_file)
         print('^_^ v0.0.6')
+
+    def predict_product_example(self):
+        test_data_path = './data/tp/'
+        stock_code = '601006'
+        start_date = '2008-01-01'
+        end_date = '2008-01-31'
+        n_way = 3
+        k_shot = 1
+        q_query = 1
+        ds = AsdkProductDs(self.train_data_path, stock_code, start_date, end_date, 0, 0, 1)
+        X_mu = ds.X_mu
+        X_std = ds.X_std
+        k_shot = 1
+        q_query = 1
+        raw_ds = np.array([
+            [6.39, 6.39, 5.49, 5.52, 614436357, 0],
+            [5.54, 5.82, 5.52, 5.73, 232650438, 0],
+            [5.69, 5.84, 5.66, 5.71, 100498125, 0],
+            [5.73, 5.79, 5.64, 5.66, 79173885, 0],
+            [5.64, 5.96, 5.59, 5.88, 126376467, 0]
+        ])
+        X, _, X_raw = AsdkMetaDs.get_ds_by_raw_ds1(raw_ds, k_shot, q_query, X_mu, X_std)
+        self.predict_product(X)
+
+    def predict_product(self, X):
+        n_way = 3
+        lr = 0.005
+        X = torch.from_numpy(X.reshape(1, 1, 25)).to(self.device)
+        model = AsmlModel(1, n_way).to(self.device)
+        model.load_state_dict(torch.load(self.chpt_product_file))
+        optimizer = torch.optim.Adam(model.parameters(), lr = lr)
+        loss_fn = nn.CrossEntropyLoss().to(self.device)
+
+        fast_weights = OrderedDict(model.named_parameters())
+        logits = model.functional_forward(X, fast_weights)
+        print(logits)
+        labels = torch.argmax(logits, dim=1)
+        print('predict label: {0};'.format(labels[0]))
 
     def train_product_batch(self, model, optimizer, x, y, n_way, k_shot, 
                 q_query, loss_fn, inner_train_steps= 1, 
