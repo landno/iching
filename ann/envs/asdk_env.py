@@ -47,18 +47,23 @@ class AsdkEnv(FmeEnv):
         return obs
 
     def step(self, action):
+        print('AsdkEnv.step 1')
         self._take_action(action)
         self.current_step += 1
         self.step_left -=1
+        print('AsdkEnv.step 2')
         done = self.net_worth[self.current_step] < 0
         if 0 >= self.step_left:
             print('回测结束......')
             reward = 1.0
             done = True
             return None, reward, done, {}
+        print('AsdkEnv.step 3')
         obs = self._next_observation()
+        print('AsdkEnv.step 4')
         reward = (self.net_worth[-1] / self.net_worth[-2]) ** 100
         self.rlw = np.append(self.rlw, [reward])
+        print('AsdkEnv.step 5')
         return obs, reward, done, {}
 
     def get_last_observation(self):
@@ -74,10 +79,13 @@ class AsdkEnv(FmeEnv):
         return obs
 
     def _take_action(self, action):
+        print('AsdkEnv._take_action 1 action_type={0};'.format(action[0]))
         action_type = action[0]
         action_percent = action[1]
         current_idx = (self.lookback_window_size - 1)*5
+        print('AsdkEnv._take_action 2')
         if 0 == action_type:
+            print('AsdkEnv._take_action 3')
             price = self.ds[self.current_step][3 + current_idx]
             self.position = np.append(self.position, [self.position[-1]])
             self.balance = np.append(self.balance, [self.balance[-1]])
@@ -85,6 +93,7 @@ class AsdkEnv(FmeEnv):
             net_worth = self.balance[-1] + self.position[-1] * price
             net_worth = int(net_worth * 100) / 100
             self.net_worth = np.append(self.net_worth, [net_worth])
+            print('AsdkEnv._take_action 4')
             self.trades = np.append(self.trades, [{
                 'date': '', 
                 'open': self.ds[self.current_step][0 + current_idx],
@@ -95,6 +104,7 @@ class AsdkEnv(FmeEnv):
                 'type': 0, 'quant': 0, 'position': self.position[-1],
                 'balance': self.balance[-1], 'net_worth': self.net_worth[-1]
             }])
+            print('AsdkEnv._take_action 5')
             print('不进行操作：仓位：{0}；余额：{1}；净值：{2}；价格：{3};'.format(
                 self.position[-1], self.balance[-1],
                 self.net_worth[-1], price
@@ -154,3 +164,4 @@ class AsdkEnv(FmeEnv):
             print('################## 买入：价格{0}；数量：{2}；仓位：{3}；余额：{1}； 净值：{4}'.format(
                 price, self.balance[-1], quant, self.position[-1], self.net_worth[-1]
             ))
+        print('AsdkEnv._take_action 6')

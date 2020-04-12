@@ -25,20 +25,20 @@ class FmeEngine(object):
         epochs = 3
         for epoch in range(epochs):
             print('epoch{0}:'.format(epoch))
-            obs = fme_env.reset()
+            prev_obs = fme_env.reset()
             steps = fme_env.step_left
-            '''
             for i in range(steps):
-                action = fme_agent.choose_action(obs)
-                fme_agent.step_prepocess()
+                action = fme_agent.choose_action(prev_obs)
+                fme_agent.step_prepocess(fme_env, fme_ds, prev_obs, action)
                 obs, reward, done, info = fme_env.step(action)
-                fme_render.render_obs(obs)
-                fme_agent.step_postprocess()
+                #fme_render.render_obs(obs)
+                fme_agent.step_postprocess(fme_env, fme_ds, prev_obs, action, obs, reward, done, info)
                 if done:
                     break
+                '''
                 if TRAIN_MODE_IMPROVE == train_mode:
                     fme_agent.finetone_model()
-            '''
+                '''
 
     def run(self):
         # 
