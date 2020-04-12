@@ -1,6 +1,6 @@
 #
 
-class FmeRender(object):
+class FmeRenderer(object):
     RENDER_MODE_CONSOLE = 1
     RENDER_MODE_GRAPH = 2
 
@@ -8,5 +8,5 @@ class FmeRender(object):
         self.name = 'apps.fme.FmeRender'
         self.render_mode = render_mode
 
-    def render(self, obs):
+    def render_obs(self, obs):
         pass
