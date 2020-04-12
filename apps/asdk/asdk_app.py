@@ -4,8 +4,8 @@ from torch.utils.data import DataLoader
 from ann.fme.fme_engine import FmeEngine
 from ann.ds.asdk_ds import AsdkDs
 from ann.envs.asdk_env import AsdkEnv
-from ann.fme.fme_renderer import FmeRenderer
 from apps.asdk.asdk_rxgb_agent import AsdkRxgbAgent
+from apps.asdk.asdk_rxgb_renderer import AsdkRxgbRenderer
 
 class AsdkApp(object):
     def __init__(self):
@@ -20,7 +20,7 @@ class AsdkApp(object):
         fme_ds = AsdkDs(stock_code, start_date, end_date)
         fme_env = AsdkEnv(fme_ds.X, initial_balance=20000)
         fme_agent = AsdkRxgbAgent()
-        fme_renderer = FmeRenderer()
+        fme_renderer = AsdkRxgbRenderer()
         calenda = fme_ds.get_date_list(stock_code, 
                     start_date,  end_date)
         fme_engine = FmeEngine()

@@ -31,7 +31,7 @@ class FmeEngine(object):
                 action = fme_agent.choose_action(prev_obs)
                 fme_agent.step_prepocess(fme_env, fme_ds, prev_obs, action)
                 obs, reward, done, info = fme_env.step(action)
-                #fme_render.render_obs(obs)
+                fme_renderer.render_obs(obs)
                 fme_agent.step_postprocess(fme_env, fme_ds, prev_obs, action, obs, reward, done, info)
                 if done:
                     break
