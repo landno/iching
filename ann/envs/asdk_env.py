@@ -19,7 +19,7 @@ class AsdkEnv(FmeEnv):
         self.rlw = None
         self.action_space = spaces.MultiDiscrete([3, 3])
         self.observation_space = spaces.Box(
-            low=0, high=10000, shape=(28, 1), dtype=np.float64
+            low=0.0, high=10000.0, shape=(28, 1), dtype=np.float64
         )
 
     def reset(self):
@@ -42,7 +42,8 @@ class AsdkEnv(FmeEnv):
         )
         obs = np.append(obs, [
             self.position[self.current_step],
-            self.balance[self.current_step], self.net_worth[self.current_step]
+            self.balance[self.current_step], 
+            self.net_worth[self.current_step]
         ])
         return obs
 
