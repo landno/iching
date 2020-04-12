@@ -34,7 +34,6 @@ class AsdkEnv(FmeEnv):
     def _reset_session(self):
         self.current_step = 0
         self.step_left = len(self.ds)
-        print(self.step_left)
 
     def _next_observation(self):
         obs = np.array(
