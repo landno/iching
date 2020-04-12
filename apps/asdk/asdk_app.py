@@ -21,9 +21,9 @@ class AsdkApp(object):
         fme_env = AsdkEnv(fme_ds.X, initial_balance=20000)
         fme_agent = AsdkRxgbAgent()
         fme_renderer = FmeRenderer()
-        calenda = fme_ds.get_date_list(stock_code, start_date,  end_date)
+        calenda = fme_ds.get_date_list(stock_code, 
+                    start_date,  end_date)
         fme_engine = FmeEngine()
-        '''
-        fme_engine.startup(train_mode, fme_ds, X, fme_env, fme_agent, fme_renderer, calenda)
-        '''
+        fme_engine.train(train_mode, fme_ds, fme_ds.X, fme_env, 
+                    fme_agent, fme_renderer, calenda)
         print('^_^')
