@@ -9,7 +9,7 @@ class AsdkEnv(FmeEnv):
 
     def __init__(self, ds, 
                 lookback_window_size=5, initial_balance=2000.0):
-        self.name = 'ann.env.AsdkEnv'
+        self.name = 'ann.envs.AsdkEnv'
         self.ds = ds 
         self.lookback_window_size = lookback_window_size
         self.initial_balance = initial_balance
