@@ -7,6 +7,8 @@ class FmeEnv(gym.Env):
 
     def __init__(self):
         self.name = 'apps.fme.FmeEnv'
+        self.current_step = 0
+        self.step_left = 0
 
     def reset(self):
         pass

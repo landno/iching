@@ -16,12 +16,29 @@ class FmeApp(object):
         elif FmeApp.MODE_TEST == mode:
             self.run_test()
         # main program
-        fme_ds = RxgbDs()
+        
         # 
 
     def train(self):
         # train phase
-        pass
+        fme_ds = RxgbDs()
+        X, _, _ = fme_ds.load_drl_ds(stock_code, start_date, end_date)
+        fme_env = RxgbEnv(X, initial_balance=20000)
+        agent = RxgbAgent()
+        epochs = 1
+        for epoch in range(epochs):
+            obs = fme_env.reset()
+            steps = fme_env.step_left
+            for i in range(steps):
+                action = agent.choose_action(obs)
+                agent.step_prepocess()
+                obs, reward, done, info = fme_env.step(action)
+                agent.render(obs)
+                agent.step_postprocess()
+                if done:
+                    break
+                if 1 == mode:
+                    agent.finetone_model()
 
     def run(self):
         # 
