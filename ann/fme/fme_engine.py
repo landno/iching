@@ -24,7 +24,7 @@ class FmeEngine(object):
         # train phase
         epochs = 3
         for epoch in range(epochs):
-            print('epoch: {0};'.format(epoch))
+            print('epoch{0}:'.format(epoch))
             obs = fme_env.reset()
             steps = fme_env.step_left
             '''
