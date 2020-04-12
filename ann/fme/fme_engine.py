@@ -27,8 +27,9 @@ class FmeEngine(object):
             print('epoch: {0};'.format(epoch))
             obs = fme_env.reset()
             print('obs: {0};\r\n{1}'.format(obs.shape, obs))
-            '''
             steps = fme_env.step_left
+            print('steps={0};'.format(steps))
+            '''
             for i in range(steps):
                 action = fme_agent.choose_action(obs)
                 fme_agent.step_prepocess()
