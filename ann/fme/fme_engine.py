@@ -1,8 +1,8 @@
 #
 import random
 import numpy as np
-from apps.ds.asdk_ds import AsdkDs
-from apps.fme.fme_renderer import FmeRenderer
+from ann.ds.asdk_ds import AsdkDs
+from ann.fme.fme_renderer import FmeRenderer
 
 class FmeEngine(object):
     def __init__(self):
@@ -20,23 +20,12 @@ class FmeEngine(object):
         
         # 
 
-    def train(self):
+    def train(self, train_mode, fme_ds, X, fme_env, fme_agent, fme_renderer, calenda):
         # train phase
-        train_mode = TRAIN_MODE_IMPROVE
-        stock_code = '601006'
-        start_date = '2007-01-01'
-        end_date = '2007-11-30'
-        fme_ds = AsdkDs()
-        _, _, X_mu, X_std = rxgb_ds.load_drl_train_ds(
-            stock_code, start_date, end_date
-        )
-        X, _, _ = fme_ds.load_drl_ds(stock_code, start_date, end_date)
-        fme_env = AsdkEnv(X, initial_balance=20000)
-        fme_agent = AsdkRxgbAgent()
-        fme_renderer = FmeRenderer()
-        calenda = fme_ds.get_date_list(stock_code, start_date,  end_date)
-        epochs = 1
+        epochs = 3
         for epoch in range(epochs):
+            print('epoch: {0};'.format(epoch))
+            '''
             obs = fme_env.reset()
             steps = fme_env.step_left
             for i in range(steps):
@@ -49,6 +38,7 @@ class FmeEngine(object):
                     break
                 if TRAIN_MODE_IMPROVE == train_mode:
                     fme_agent.finetone_model()
+            '''
 
     def run(self):
         # 
