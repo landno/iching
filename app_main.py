@@ -4,7 +4,7 @@ from apps.ogml.ogml_app import OgmlApp
 from apps.tp.tp_app import TpApp
 from apps.rxgb.rxgb_app import RxgbApp
 from apps.asml.asml_app import AsmlApp
-from apps.fme.fme_app import FmeApp
+from apps.asdk.asdk_app import AsdkApp
 
 def norm_batch_tasks(batch_vals, task_num):
     arrs = []
@@ -31,7 +31,7 @@ def main():
     #app = TpApp()
     #app = RxgbApp()
     #app = AsmlApp()
-    app = FmeApp()
+    app = AsdkApp()
     app.startup()
 
 if '__main__' == __name__:
