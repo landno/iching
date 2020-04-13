@@ -18,3 +18,6 @@ class AsdkRxgbAgent(FmeAgent):
 
     def step_postprocess(self, env, ds, prev_obs, action, obs, reward, done, info):
         print('AsdkRxgbAgent.step_postprocess...')
+
+    def finetone_model(self, obs, action, reward):
+        print('AsdkRxgbAgent.finetone_model...')

@@ -35,10 +35,8 @@ class FmeEngine(object):
                 fme_agent.step_postprocess(fme_env, fme_ds, prev_obs, action, obs, reward, done, info)
                 if done:
                     break
-                '''
-                if TRAIN_MODE_IMPROVE == train_mode:
-                    fme_agent.finetone_model()
-                '''
+                if FmeEngine.TRAIN_MODE_IMPROVE == train_mode:
+                    fme_agent.finetone_model(obs, action, reward)
 
     def run(self):
         # 
