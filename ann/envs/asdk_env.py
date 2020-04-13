@@ -81,11 +81,11 @@ class AsdkEnv(FmeEnv):
         quant = 0
         cost = 0.0
         if 0 == action_type:
-            quant, amount, cost = self._do_hold_action(current_idx, price)
+            action[0], quant, amount, cost = self._do_hold_action(current_idx, price)
         elif 1 == action_type:
-            quant, amount, cost = self._do_sell_action(current_idx, price)
+            action[0], quant, amount, cost = self._do_sell_action(current_idx, price)
         elif 2 == action_type:
-            quant, amount, cost = self._do_buy_action(current_idx, price)
+            action[0], quant, amount, cost = self._do_buy_action(current_idx, price)
         return {'price': price, 'quant': quant, 'cost': cost}
 
     def _do_hold_action(self, current_idx, price):
@@ -104,7 +104,7 @@ class AsdkEnv(FmeEnv):
             'type': 0, 'quant': 0, 'position': self.position[-1],
             'balance': self.balance[-1], 'net_worth': self.net_worth[-1]
         }])
-        return 0, 0.0, 0.0
+        return 0, 0, 0.0, 0.0
 
     def _do_sell_action(self, current_idx, price):
         quant = self.position[-1]
@@ -126,10 +126,12 @@ class AsdkEnv(FmeEnv):
             'type': 1, 'quant': quant, 'position': self.position[-1],
             'balance': self.balance[-1], 'net_worth': self.net_worth[-1]
         }])
-        return quant, amount, cost
+        return 1, quant, amount, cost
 
     def _do_buy_action(self, current_idx, price):           
         quant = int(self.balance[-1] / price)
+        if quant < 1:
+            return self._do_hold_action(current_idx, price)
         amount = quant * price
         cost = CnaStock.buy_stock_cost(amount)
         while self.balance[-1] - amount - cost < 0:
@@ -154,4 +156,4 @@ class AsdkEnv(FmeEnv):
             'type': 2, 'quant': quant, 'position': self.position[-1],
             'balance': self.balance[-1], 'net_worth': self.net_worth[-1]
         }])
-        return quant, amount, cost
+        return 2, quant, amount, cost

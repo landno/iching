@@ -6,6 +6,8 @@ class AsdkRxgbRenderer(FmeRenderer):
         self.name = 'apps.asdk.AsdkRxgbRenderer'
 
     def render_obs(self, env, prev_obs, action, reward, obs, info):
+        if env.current_step >= len(env.ds):
+            return
         action_type = action[0]
         current_idx = (env.lookback_window_size - 1)*5
         action_name = '未知'
@@ -17,7 +19,6 @@ class AsdkRxgbRenderer(FmeRenderer):
             action_name = '卖出'
         elif 2 == action_type:
             action_name = '买入'
-
         print('操作：{0}; 价格：{1}; 数量：{2}; 成本：{3}; 仓位：{4}; '
                     '余额：{5}; 净值：{6};'.format(
                         action_name, 
