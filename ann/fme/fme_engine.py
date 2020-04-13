@@ -16,9 +16,6 @@ class FmeEngine(object):
             self.run_main()
         elif FmeApp.MODE_TEST == mode:
             self.run_test()
-        # main program
-        
-        # 
 
     def train(self, train_mode, fme_ds, X, fme_env, fme_agent, fme_renderer, calenda):
         # train phase
@@ -32,7 +29,7 @@ class FmeEngine(object):
                 fme_agent.step_prepocess(fme_env, fme_ds, prev_obs, action)
                 obs, reward, done, info = fme_env.step(action)
                 fme_renderer.render_obs(obs)
-                fme_agent.step_postprocess(fme_env, fme_ds, prev_obs, action, obs, reward, done, info)
+                fme_agent.step_postprocess(i, fme_env, fme_ds, prev_obs, action, obs, reward, done, info, calenda)
                 if done:
                     break
                 if FmeEngine.TRAIN_MODE_IMPROVE == train_mode:

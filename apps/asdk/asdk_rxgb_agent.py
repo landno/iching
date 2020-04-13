@@ -15,9 +15,11 @@ class AsdkRxgbAgent(FmeAgent):
 
     def step_prepocess(self, env, ds, obs, action):
         print('AsdkRxgbAgent.step_preprocess...')
+        self.actions = np.array([[0, 100]])
 
-    def step_postprocess(self, env, ds, prev_obs, action, obs, reward, done, info):
+    def step_postprocess(self, i, env, ds, prev_obs, action, obs, reward, done, info, calenda):
         print('AsdkRxgbAgent.step_postprocess...')
+        env.trades[-1]['date'] = calenda[i + env.lookback_window_size - 1]
 
     def finetone_model(self, obs, action, reward):
         print('AsdkRxgbAgent.finetone_model...')
