@@ -27,7 +27,9 @@ class AsdkDs(Dataset):
         X = np.array(X_raw)
         self.X_mu = np.mean(X, axis=0)
         self.X_std = np.std(X, axis=0)
-        self.X = (X - self.X_mu) / self.X_std
+        self.X_max = np.max(X, axis=0)
+        self.X_min = np.min(X, axis=0)
+        self.X = X #(X - self.X_min) / (self.X_max - self.X_min)
         self.y = np.array(y_raw, dtype=np.int)
 
     def __getitem__(self, idx):
