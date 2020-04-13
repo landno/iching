@@ -47,7 +47,7 @@ class AsdkEnv(FmeEnv):
         return obs
 
     def step(self, action):
-        self._take_action(action)
+        info = self._take_action(action)
         self.current_step += 1
         self.step_left -=1
         done = self.net_worth[self.current_step] < 0
@@ -57,9 +57,9 @@ class AsdkEnv(FmeEnv):
             done = True
             return None, reward, done, {}
         obs = self._next_observation()
-        reward = (self.net_worth[-1] / self.net_worth[-2]) ** 100
+        reward = (self.net_worth[-1] / self.net_worth[-2]) ** 10
         self.rlw = np.append(self.rlw, [reward])
-        return obs, reward, done, {}
+        return obs, reward, done, info
 
     def get_last_observation(self):
         self.current_step -= 1
@@ -77,8 +77,10 @@ class AsdkEnv(FmeEnv):
         action_type = action[0]
         action_percent = action[1]
         current_idx = (self.lookback_window_size - 1)*5
+        price = self.ds[self.current_step][3 + (self.lookback_window_size - 1)*5]
+        quant = 0
+        cost = 0.0
         if 0 == action_type:
-            price = self.ds[self.current_step][3 + current_idx]
             self.position = np.append(self.position, [self.position[-1]])
             self.balance = np.append(self.balance, [self.balance[-1]])
             price = self.ds[self.current_step][3 + (self.lookback_window_size - 1)*5]
@@ -95,12 +97,7 @@ class AsdkEnv(FmeEnv):
                 'type': 0, 'quant': 0, 'position': self.position[-1],
                 'balance': self.balance[-1], 'net_worth': self.net_worth[-1]
             }])
-            print('不进行操作：仓位：{0}；余额：{1}；净值：{2}；价格：{3};'.format(
-                self.position[-1], self.balance[-1],
-                self.net_worth[-1], price
-            ))
         elif 1 == action_type:
-            price = self.ds[self.current_step][3 + (self.lookback_window_size - 1)*5]
             quant = self.position[-1]
             amount = quant * price
             cost = CnaStock.sell_stock_cost(amount)
@@ -120,12 +117,7 @@ class AsdkEnv(FmeEnv):
                 'type': 1, 'quant': quant, 'position': self.position[-1],
                 'balance': self.balance[-1], 'net_worth': self.net_worth[-1]
             }])
-            print('################## 卖出：价格{0}；数量：{2}；仓位：{3}；余额：{1}； 净值：{4}'.format(
-                price, self.balance[-1], quant, self.position[-1], self.net_worth[-1]
-            ))
-
-        elif 2 == action_type:
-            price = self.ds[self.current_step][3 + (self.lookback_window_size - 1)*5]
+        elif 2 == action_type:            
             quant = int(self.balance[-1] / price)
             amount = quant * price
             cost = CnaStock.buy_stock_cost(amount)
@@ -151,6 +143,4 @@ class AsdkEnv(FmeEnv):
                 'type': 2, 'quant': quant, 'position': self.position[-1],
                 'balance': self.balance[-1], 'net_worth': self.net_worth[-1]
             }])
-            print('################## 买入：价格{0}；数量：{2}；仓位：{3}；余额：{1}； 净值：{4}'.format(
-                price, self.balance[-1], quant, self.position[-1], self.net_worth[-1]
-            ))
+        return {'price': price, 'quant': quant, 'cost': cost}

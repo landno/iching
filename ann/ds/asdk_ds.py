@@ -7,6 +7,7 @@ from torch.utils.data import DataLoader, Dataset
 class AsdkDs(Dataset):
     def __init__(self, stock_code, start_date, end_date):
         self.name = 'ann.ds.AsdkDs'
+        self.X_dim = 25
         stock_df = pd.read_csv('./data/tp/sh{0}_trend.csv'.format(stock_code), index_col='date')
         stock_df.index = pd.to_datetime(stock_df.index)
         df = stock_df[start_date:end_date]
@@ -24,12 +25,11 @@ class AsdkDs(Dataset):
             ]
             X_raw.append(rec)
             y_raw.append(int(raw_ds[i][-1]))
-        X = np.array(X_raw)
-        self.X_mu = np.mean(X, axis=0)
-        self.X_std = np.std(X, axis=0)
-        self.X_max = np.max(X, axis=0)
-        self.X_min = np.min(X, axis=0)
-        self.X = X #(X - self.X_min) / (self.X_max - self.X_min)
+        self.X = np.array(X_raw)
+        self.X_mu = np.mean(self.X, axis=0)
+        self.X_std = np.std(self.X, axis=0)
+        self.X_max = np.max(self.X, axis=0)
+        self.X_min = np.min(self.X, axis=0)
         self.y = np.array(y_raw, dtype=np.int)
 
     def __getitem__(self, idx):

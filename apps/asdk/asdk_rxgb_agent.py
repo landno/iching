@@ -10,7 +10,7 @@ class AsdkRxgbAgent(FmeAgent):
         self.actions = np.array([[0, 100]])
 
     def choose_action(self, obs, ds):
-        raw_ds = obs[:-3].reshape((1, 25))
+        raw_ds = obs[:-3].reshape((1, ds.X_dim))
         action = raw_action = self.strategy.predict( (raw_ds - ds.X_mu) / ds.X_std)
         if 1 == raw_action and obs[-3]==0 and self.actions[-1][0]!=2:
             action = 0
