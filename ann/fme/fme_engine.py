@@ -24,8 +24,9 @@ class FmeEngine(object):
             print('epoch{0}:'.format(epoch))
             prev_obs = fme_env.reset()
             steps = fme_env.step_left
+            fme_agent.init_session(fme_env, fme_ds, prev_obs)
             for i in range(steps):
-                action = fme_agent.choose_action(prev_obs)
+                action = fme_agent.choose_action(prev_obs, fme_ds)
                 fme_agent.step_prepocess(fme_env, fme_ds, prev_obs, action)
                 obs, reward, done, info = fme_env.step(action)
                 fme_renderer.render_obs(obs)
