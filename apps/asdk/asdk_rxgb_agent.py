@@ -1,5 +1,6 @@
 #
 import sys
+import csv
 import numpy as np
 from ann.fme.fme_agent import FmeAgent
 from ann.strategies.rxgb_strategy import RxgbStrategy
@@ -35,3 +36,20 @@ class AsdkRxgbAgent(FmeAgent):
 
     def finetone_model(self, obs, action, reward):
         print('AsdkRxgbAgent.finetone_model...')
+
+    def summary_epoch(self, env):
+        with open('./work/rxgb.csv', 'a', encoding='UTF8', newline='') as fd:
+            wrt = csv.writer(fd, delimiter=',')
+            wrt.writerow([
+                'date', 'open', 'high', 'low', 'close', 
+                'volume', 'type', 'quant', 'position', 
+                'balance', 'net_worth'
+            ])
+            for trade in env.trades:
+                row = [
+                    trade['date'], trade['open'], trade['high'],
+                    trade['low'], trade['close'], trade['volume'],
+                    trade['type'], trade['quant'], trade['position'],
+                    trade['balance'], trade['net_worth']
+                ]
+                wrt.writerow(row)

@@ -36,6 +36,7 @@ class FmeEngine(object):
                 if FmeEngine.TRAIN_MODE_IMPROVE == train_mode:
                     fme_agent.finetone_model(obs, action, reward)
                 prev_obs = obs
+        fme_agent.summary_epoch(fme_env)
 
     def evaluate(self):
         pass
