@@ -15,7 +15,7 @@ class AsdkApp(object):
         print('A股市场日K线应用 v0.0.5')
         stock_code = '601006'
         start_date = '2006-08-01'
-        end_date = '2007-04-30'
+        end_date = '2007-09-27'
         train_mode = FmeEngine.TRAIN_MODE_IMPROVE
         fme_ds = AsdkDs(stock_code, start_date, end_date)
         fme_env = AsdkEnv(fme_ds.X, initial_balance=20000)

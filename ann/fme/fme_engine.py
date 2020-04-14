@@ -35,9 +35,12 @@ class FmeEngine(object):
                     break
                 if FmeEngine.TRAIN_MODE_IMPROVE == train_mode:
                     fme_agent.finetone_model(obs, action, reward)
+                prev_obs = obs
 
+    def evaluate(self):
+        pass
+    
     def run(self):
-        # 
         pass
 
     MODE_MAIN = 100

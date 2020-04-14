@@ -1,4 +1,5 @@
 #
+import sys
 import csv
 import numpy as np
 from apps.rxgb.rxgb_ds import RxgbDs
@@ -12,6 +13,8 @@ class RxgbAgent(object):
         self.actions = np.array([[2, 100]])
         self.rxgb_strategy = RxgbStrategy()
         self.calenda = []
+        #
+        self.num = 1
 
     def train(self):
         print('利用强化学习算法训练模型')
@@ -75,6 +78,12 @@ class RxgbAgent(object):
     def choose_action(self, obs):
         raw_ds = obs[:-3].reshape((1, 25))
         action = raw_action = self.rxgb_strategy.predict( (raw_ds - self.X_mu) / self.X_std)
+        print('raw_ds: {0};'.format(raw_ds))
+        print('action: {0};'.format(action))
+        print('##########################################')
+        self.num += 1
+        if self.num > 5:
+            sys.exit()
         if 1 == raw_action and obs[-3]==0 and self.actions[-1][0]!=2:
             action = 0
         elif 1 == raw_action and self.actions[-1][0]==1:

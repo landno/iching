@@ -1,4 +1,5 @@
 #
+import sys
 import numpy as np
 from ann.fme.fme_agent import FmeAgent
 from ann.strategies.rxgb_strategy import RxgbStrategy
@@ -11,7 +12,7 @@ class AsdkRxgbAgent(FmeAgent):
 
     def choose_action(self, obs, ds):
         raw_ds = obs[:-3].reshape((1, ds.X_dim))
-        action = raw_action = self.strategy.predict( (raw_ds - ds.X_mu) / ds.X_std)
+        action = raw_action = self.strategy.predict((raw_ds - ds.X_mu) / ds.X_std)
         if 1 == raw_action and obs[-3]==0 and self.actions[-1][0]!=2:
             action = 0
         elif 1 == raw_action and self.actions[-1][0]==1:

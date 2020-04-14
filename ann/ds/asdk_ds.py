@@ -33,6 +33,7 @@ class AsdkDs(Dataset):
         self.y = np.array(y_raw, dtype=np.int)
 
     def __getitem__(self, idx):
+        print('idx={0};'.format(idx))
         return self.X[idx : idx+1], self.y[idx : idx+1]
 
     def __len__(self):
