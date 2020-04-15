@@ -54,12 +54,12 @@ git clone https://github.com/yt7589/iching.git
 python app_main.py
 ```
 ## 项目目录结构
-ann/ds：项目支持的所有数据集；
-ann/envs：包含所有支持的金融市场强化学习环境；
-ann/fme：金融市场强化学习框架；
-ann/strategies：各种强化学习策略算法；
-apps/asdk：应用于A股市场日K线数据集的应用，每个子目录是一种不同的策略；
-apps/asml：A股日K线数据集上的MAML算法应用演示应用；
-apps/common：金融市场公共方法，如手续费、税费、过户费等规则定义；
-apps/ogml：MAML模型在omniglot数据集上的应用示例；
-apps/tp：在A股日K线数据集上的交易对应用示例；
+ann/ds：项目支持的所有数据集；  
+ann/envs：包含所有支持的金融市场强化学习环境；  
+ann/fme：金融市场强化学习框架；  
+ann/strategies：各种强化学习策略算法；  
+apps/asdk：应用于A股市场日K线数据集的应用，每个子目录是一种不同的策略；  
+apps/asml：A股日K线数据集上的MAML算法应用演示应用；  
+apps/common：金融市场公共方法，如手续费、税费、过户费等规则定义；  
+apps/ogml：MAML模型在omniglot数据集上的应用示例；  
+apps/tp：在A股日K线数据集上的交易对应用示例；  
