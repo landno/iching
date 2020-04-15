@@ -55,7 +55,11 @@ class FmeEngine(object):
             prev_obs = obs
         fme_agent.summary_epoch(fme_env)
     
-    def run(self):
+    def run(self, train_mode, fme_ds, X, fme_env, fme_agent, fme_renderer, calenda):
+        daily_tick = np.array([
+            1.1, 1.5, 1.0, 1.3, 1000
+        ])
+        obs = fme_env.get_last_observation(daily_tick)
         pass
 
     MODE_MAIN = 100

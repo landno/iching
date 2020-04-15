@@ -1,4 +1,5 @@
 #
+import sys
 import numpy as np
 import gym
 from gym import spaces
@@ -43,6 +44,19 @@ class AsdkEnv(FmeEnv):
             self.position[self.current_step],
             self.balance[self.current_step], 
             self.net_worth[self.current_step]
+        ])
+        return obs
+
+    def get_last_observation(self, daily_tick):
+        ds_len = len(self.ds)
+        obs = np.array(
+            self.ds[ds_len - 1]
+        )
+        obs = np.append(obs, [daily_tick])
+        obs = np.append(obs, [
+            self.position[ds_len - 1],
+            self.balance[ds_len - 1], 
+            self.net_worth[ds_len - 1]
         ])
         return obs
 

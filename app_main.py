@@ -14,11 +14,17 @@ def norm_batch_tasks(batch_vals, task_num):
     return np.hstack(tuple(arrs)).mean(axis=1)
 
 def exp():
-    X = np.array([
-        [1.1, 1.2, 1.3, 1.4, 1.5],
-        [2.1, 2.2, 2.3, 2.4, 2.5]
+    obs = np.array([
+        1.1, 1.2, 1.3, 1.4, 1.5,
+        2.1, 2.2, 2.3, 2.4, 2.5,
+        3.1, 3.2, 3.3, 3.4, 3.5,
+        4.1, 4.2, 4.3, 4.4, 4.5,
+        5.1, 5.2, 5.3, 5.4, 5.5
     ])
-    print('max:{0};'.format(np.max(X, axis=0)))
+    daily_tick = np.array([6.1, 6.2, 6.3, 6.4, 6.5])
+    obs = obs[:20]
+    obs = np.append(obs, [daily_tick])
+    print('X:{0};\r\n{1}'.format(obs.shape, obs))
 
 def main():
     print('易经量化交易系统 v0.0.1')
