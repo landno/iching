@@ -1,3 +1,4 @@
+Notes: chinese version at the bottom. ^_^
 # iching v0.0.1
 Iching is a deep meta reinforcement learning quantitative trading platform.
 ## Why iching
@@ -37,4 +38,4 @@ This folder is a demo application to use MAML to omniglot dataset.
 #### apps/tp
 This folder is a demo application to use trading pair algorithm in chinese A stock daily K line dataset.
 
-
+易经量化交易系统是基于深度元强化学习技术，并结合心理学小样本学习技术的量化交易平台。\newline
