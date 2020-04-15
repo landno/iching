@@ -4,8 +4,8 @@ from torch.utils.data import DataLoader
 from ann.fme.fme_engine import FmeEngine
 from ann.ds.asdk_ds import AsdkDs
 from ann.envs.asdk_env import AsdkEnv
-from apps.asdk.asdk_rxgb_agent import AsdkRxgbAgent
-from apps.asdk.asdk_rxgb_renderer import AsdkRxgbRenderer
+from apps.asdk.rxgb.asdk_rxgb_agent import AsdkRxgbAgent
+from apps.asdk.rxgb.asdk_rxgb_renderer import AsdkRxgbRenderer
 
 class AsdkApp(object):
     def __init__(self):
