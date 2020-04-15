@@ -17,3 +17,24 @@ Run this program is very easy. Go to the iching folder and run:
 ```
 python app_main.py
 ```
+### Project Structure
+#### ann/ds
+This folder contains all the datasets.
+#### ann/envs
+This folder contains all the financial market reinforcement learning environments.
+#### ann/fme
+This folder contains the base class of the financial market environment. It is a simplified reinforcement learning environment.
+#### ann/strategies
+This folder contains the strategies used by reinforcement learning algorithm.
+#### apps/asdk
+This folder contains reinforcement learning application deal with chinese A stock market daily k line dataset. Each sub folder use a different strategy.
+#### apps/asml
+This folder contains a demo application to use MAML algorithm in chinese A stock daily k line dataset.
+#### apps/common
+This folder contains common logic for financial market trading, such as commission, tax, transfer fee.
+#### apps/ogml
+This folder is a demo application to use MAML to omniglot dataset.
+#### apps/tp
+This folder is a demo application to use trading pair algorithm in chinese A stock daily K line dataset.
+
+
