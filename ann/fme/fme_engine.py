@@ -38,8 +38,22 @@ class FmeEngine(object):
                 prev_obs = obs
         fme_agent.summary_epoch(fme_env)
 
-    def evaluate(self):
-        pass
+    def evaluate(self, train_mode, fme_ds, X, fme_env, fme_agent, fme_renderer, calenda):
+        prev_obs = fme_env.reset()
+        steps = fme_env.step_left
+        fme_agent.init_session(fme_env, fme_ds, prev_obs)
+        for i in range(steps):
+            action = fme_agent.choose_action(prev_obs, fme_ds)
+            fme_agent.step_prepocess(fme_env, fme_ds, prev_obs, action)
+            obs, reward, done, info = fme_env.step(action)
+            fme_renderer.render_obs(fme_env, prev_obs, action, reward, obs, info)
+            fme_agent.step_postprocess(i, fme_env, fme_ds, prev_obs, action, obs, reward, done, info, calenda)
+            if done:
+                break
+            if FmeEngine.TRAIN_MODE_IMPROVE == train_mode:
+                fme_agent.finetone_model(obs, action, reward)
+            prev_obs = obs
+        fme_agent.summary_epoch(fme_env)
     
     def run(self):
         pass

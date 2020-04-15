@@ -12,7 +12,7 @@ class AsdkApp(object):
         self.name = 'apps.asdk.AsdkApp'
 
     def startup(self):
-        print('A股市场日K线应用 v0.0.5')
+        print('A股市场日K线应用 v0.0.6')
         stock_code = '601006'
         start_date = '2006-08-01'
         end_date = '2007-09-27'
@@ -24,6 +24,17 @@ class AsdkApp(object):
         calenda = fme_ds.get_date_list(stock_code, 
                     start_date,  end_date)
         fme_engine = FmeEngine()
-        fme_engine.train(train_mode, fme_ds, fme_ds.X, fme_env, 
+        mode = AsdkApp.MODE_EVALUATE
+        if AsdkApp.MODE_TRAIN == mode:
+            fme_engine.train(train_mode, fme_ds, fme_ds.X, fme_env, 
                     fme_agent, fme_renderer, calenda)
+        elif AsdkApp.MODE_EVALUATE == mode:
+            fme_engine.evaluate(train_mode, fme_ds, fme_ds.X, fme_env, 
+                    fme_agent, fme_renderer, calenda)
+        elif AsdkApp.MODE_RUN == mode:
+            print('run mode...')
         print('^_^')
+
+    MODE_TRAIN = 1001
+    MODE_EVALUATE = 1002
+    MODE_RUN = 1003
