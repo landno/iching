@@ -60,7 +60,7 @@ class FmeEngine(object):
             1.1, 1.5, 1.0, 1.3, 1000
         ])
         obs = fme_env.get_last_observation(daily_tick)
-        pass
+        # 业务逻辑见2020年4月16日笔记
 
     MODE_MAIN = 100
     MODE_TEST = 101
