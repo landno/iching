@@ -1,0 +1,182 @@
+% \documentclass{article}
+\documentclass[UTF8]{article}
+% \usepackage{xeCJK}
+\usepackage{ctex}
+% if you need to pass options to natbib, use, e.g.:
+%\PassOptionsToPackage{numbers, compress}{natbib}
+% before loading nips_2017
+%
+% to avoid loading the natbib package, add option nonatbib:
+% \usepackage[nonatbib]{nips_2017}
+
+\usepackage[final]{nips_2017}
+
+% to compile a camera-ready version, add the [final] option, e.g.:
+% \usepackage[final]{nips_2017}
+
+\usepackage[utf8]{inputenc} % allow utf-8 input
+\usepackage[T1]{fontenc}    % use 8-bit T1 fonts
+\DeclareRobustCommand\nobreakspace{\leavevmode\nobreak\ }
+\usepackage{hyperref}       % hyperlinks
+\usepackage{url}            % simple URL typesetting
+\usepackage{booktabs}       % professional-quality tables
+\usepackage{amsfonts}       % blackboard math symbols
+\usepackage{nicefrac}       % compact symbols for 1/2, etc.
+\usepackage{microtype}      % microtypography
+\usepackage{bm}             % bold in math
+\usepackage{graphicx}       % images
+\usepackage{algorithm}      % algorithm
+\usepackage[noend]{algpseudocode} % algorithm
+\usepackage{caption}        % captionof
+\usepackage{array}          % thick column hline
+\usepackage{booktabs}       % table style
+\usepackage{pbox}           % table line break
+\usepackage{subcaption}     % multiple figures
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usepackage{amsmath}
+\definecolor{mygreen}{rgb}{0,0.6,0}
+\definecolor{mygray}{rgb}{0.5,0.5,0.5}
+\definecolor{mymauve}{rgb}{0.58,0,0.82}
+\definecolor{codeBkg}{rgb}{0.85,0.85,0.85}
+
+\lstset{
+	backgroundcolor=\color{codeBkg},   % choose the background color; you must add \usepackage{color} or \usepackage{xcolor}; should come as last argument
+	basicstyle=\footnotesize,        % the size of the fonts that are used for the code
+	breakatwhitespace=false,         % sets if automatic breaks should only happen at whitespace
+	breaklines=true,                 % sets automatic line breaking
+	captionpos=b,                    % sets the caption-position to bottom
+	commentstyle=\color{mygreen},    % comment style
+	deletekeywords={...},            % if you want to delete keywords from the given language
+	escapeinside={\%*}{*)},          % if you want to add LaTeX within your code
+	extendedchars=true,              % lets you use non-ASCII characters; for 8-bits encodings only, does not work with UTF-8
+	frame=no,	                   % adds a frame around the code
+	keepspaces=true,                 % keeps spaces in text, useful for keeping indentation of code (possibly needs columns=flexible)
+	keywordstyle=\color{blue},       % keyword style
+	language=Octave,                 % the language of the code
+	morekeywords={*,...},            % if you want to add more keywords to the set
+	numbers=left,                    % where to put the line-numbers; possible values are (none, left, right)
+	numbersep=5pt,                   % how far the line-numbers are from the code
+	numberstyle=\tiny\color{mygray}, % the style that is used for the line-numbers
+	rulecolor=\color{black},         % if not set, the frame-color may be changed on line-breaks within not-black text (e.g. comments (green here))
+	showspaces=false,                % show spaces everywhere adding particular underscores; it overrides 'showstringspaces'
+	showstringspaces=false,          % underline spaces within strings only
+	showtabs=false,                  % show tabs within strings adding particular underscores
+	stepnumber=1,                    % the step between two line-numbers. If it's 1, each line will be numbered
+	stringstyle=\color{mymauve},     % string literal style
+	tabsize=4,	                   % sets default tabsize to 2 spaces
+	title=\lstname                  % show the filename of files included with \lstinputlisting; also try caption instead of title
+}
+
+\title{高级量化交易技术}
+
+\hypersetup{
+    colorlinks = true,
+}
+\makeatletter
+% \def\BState{\State\hskip-\ALG@thistlm}
+\def\BState{\hskip-\ALG@thistlm}
+\makeatother
+\floatname{algorithm}{Procedure}
+\renewcommand{\algorithmicrequire}{\textbf{Input:}}
+\renewcommand{\algorithmicensure}{\textbf{Output:}}
+
+\newcolumntype{?}{!{\vrule width 3pt}}
+
+\author{
+  闫涛 \\
+  %% examples of more authors
+  %% \And
+  %% Nicholas Frosst \\
+  %% Affiliation \\
+  %% Address \\
+  %% \texttt{email} \\
+  %% \AND
+  %% Geoffrey E. Hinton \\
+  科技有限公司\\
+  北京 \\
+  \texttt{\{yt7589\}@qq.com} \\
+  %% Affiliation \\
+  %% Address \\
+  %% \texttt{email} \\
+  %% \And
+  %% Coauthor \\
+  %% Affiliation \\
+  %% Address \\
+  %% \texttt{email} \\
+  %% \And
+  %% Coauthor \\
+  %% Affiliation \\
+  %% Address \\
+  %% \texttt{email} \\
+}
+\date{Dec 2019}
+
+% \usepackage{natbib}
+% \usepackage{graphicx}
+
+\begin{document}
+
+\newpage
+\maketitle
+\begin{center}
+\quad \newline \quad \newline \quad \newline \quad \newline \quad \newline \quad \newline \quad \newline \quad \newline \quad \newline \quad \newline
+\quad \newline \quad \newline \quad \newline \quad \newline \quad \newline \quad \newline \quad \newline \quad \newline \quad \newline \quad \newline
+\quad \newline \quad \newline \quad \newline \quad \newline \quad \newline \quad \newline \quad \newline \quad \newline \quad \newline \quad \newline
+\quad \newline \quad \newline \quad \newline
+\Large \textbf{第一篇 统计套利} \quad \textbf{}
+\end{center}
+
+\include{./chapters/chp001}
+\include{./chapters/chp002}
+\include{./chapters/chp003}
+\include{./chapters/chp004}
+\include{./chapters/chp005}
+\include{./chapters/chp006}
+\include{./chapters/chp007}
+
+\newpage
+\maketitle
+\begin{center}
+\quad \newline \quad \newline \quad \newline \quad \newline \quad \newline \quad \newline \quad \newline \quad \newline \quad \newline \quad \newline
+\Large \textbf{第二篇 深度学习算法} \quad \textbf{}
+\end{center}
+
+
+
+
+\newpage
+\maketitle
+\begin{center}
+\quad \newline \quad \newline \quad \newline \quad \newline \quad \newline \quad \newline \quad \newline \quad \newline \quad \newline \quad \newline
+\Large \textbf{第三篇 深度元强化学习} \quad \textbf{}
+\end{center}
+
+
+\include{./chapters/aqp0301}
+
+\newpage
+\maketitle
+\begin{center}
+\quad \newline \quad \newline \quad \newline \quad \newline \quad \newline \quad \newline \quad \newline \quad \newline \quad \newline \quad \newline
+\Large \textbf{第四篇 实盘实践} \quad \textbf{}
+\end{center}
+
+\include{./chapters/aqp0401}
+\include{./chapters/aqp0402}
+
+
+\section{附录X}
+
+\newpage
+
+\bibliographystyle{plainnat}
+\bibliography{nips}
+
+\appendix
+
+\end{document}
+
+
+

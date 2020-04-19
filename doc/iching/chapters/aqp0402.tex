@@ -1,0 +1,278 @@
+\newpage
+\maketitle
+\begin{center}
+\Large \textbf{第402章 统计套利} \quad 
+\end{center}
+\begin{abstract}
+在本章中，我们将根据A股历史数据，完成基于交易对的统计套利交易策略。
+\end{abstract}
+\section{统计套利}
+在股市中，同行业的两支股票，由于所处的宏观经济环境和市场环境相同，其股价之间一般会维持一个恒定比例，当出现某些特殊情况时，某一支股票会出现比较大的波动，这时二者之间的股价比例将发生大的波动，但是会在较短的时间内，又回归到原来的比特。如果我们同时持有这两支股票S1和S2，当其中S1临时出现股价上涨高估时，我们就卖出S1的股票，买入S2的股票，当S1股价回落时，我们再将这次买入的S2股票卖掉，重新买入S1的股票，保持S1和S2股票的持有数量和比例不变，但是由于S1出现股价波动，我们实际赚到了这次波的利润。S1出现低估时，需要反向操作，原理相同。\newline
+基于交易对的统计套利策略包括三大问题：
+\begin{itemize}
+\item 交易对选择；
+\item 交易策略制定；
+\item 交易中的仓位管理；
+下面我们分别来讨论这三个问题。
+\end{itemize}
+\subsection{交易对选择}
+基于交易对的统计套利方法分为形成期和交易期。形成期就是根据历史行情数据，找出适合交易的交易对。交易对选择方法如下所示：
+\begin{itemize}
+\item 行业内匹配法：选择同行业规模和业务模式相近的企业，例如我们在本章例子中所举的，选择银行业相关股票；
+\item 产业链配对法：选择同一产业链上下游企业配对，例如手机厂商和摄像头厂商配对；
+\item 财务管理配对法：从基本面分析入手，选择市盈率、负债率、产品种类相似的企业进行配对；
+\end{itemize}
+国内沪深两市共有2780支股票，如果我们拿任意两种股票进行配对，会有3862810种组合，计算量过大。在实际应用中，我们通常选择沪深500指数股、上证50成份股和创业板指数股作为股票池，从中选择交易对。另外，有一些股票，同时在不同交易所上市，例如中石油就同时在国内A股和香港H股上市，由于二者表示同一家公司的股票，可以构成交易对。下面我们来看交易对的选择标准。
+\subsubsection{最小距离法}
+我们的目标是选择历史价差稳定的交易对，我们首先需要对股票价格数据进行标准化，假设第$i$支股票的价格序列为：
+\begin{equation}
+P^{i}_{t} \quad t \in \{1, 2, 3, ..., T \}
+\label{e0402-stock-price-series}
+\end{equation}
+我们定义第$i$支股票在第$t$天的单期收益率为：
+\begin{equation}
+r^{i}_{t} = \frac{P^{i}_{t} - P^{i}_{t-1}}{ P^{i}_{t-1} }, \quad t=1, 2, 3, ..., T
+\label{e0402-stock-invest-return-t-th-day}
+\end{equation}
+我们定义第$i$支股票在第$t$天的标准价格为：
+\begin{equation}
+\hat{p}^{i}_{t} = \sum _{\tau = 1}^{t} (1 + r_{\tau}^{i})
+\label{e0402-stock-standard-price-t-th-day}
+\end{equation}
+我们定义股票X、Y的平方标准化价格差SSD为：
+\begin{equation}
+SSD_{X,Y} = \sum _{t=1}^{T} (\hat{p}_{t}^{X} - \hat{p}_{t}^{Y})^{2}
+\label{e0402-stock-square-standard-price-diff}
+\end{equation}
+下面我们以上证50成份股为例，找出其出潜在的交易对：
+\lstset{language=PYTHON, caption={基于最小距离法的上证50成份股交易对选择}, label={c000003}}
+\begin{lstlisting}
+#
+import numpy as np
+import pandas as pd
+
+class TpApp(object):
+    def __init__(self):
+        self.name = 'app.tp.TpApp'
+        self.stock_pool = [
+                    '600000','600010','600015','600016','600018',
+                    '600028','600030','600036','600048','600050',
+                    '600104','600109','600111','600150','600518',
+                    '600519','600585','600637','600795','600837',
+                    '600887','600893','600999','601006',
+                    '601088','601166','601169','601186',
+                    '601318','601328','601390',
+                    '601398','601601','601628','601668',
+                    '601766','601857',
+                    '601988','601989','601998']
+        self.tpc = {}
+
+    def startup(self):
+        print('交易对应用')
+        sh = pd.read_csv('./data/sh50p.csv', index_col='Trddt')
+        sh.index = pd.to_datetime(sh.index)
+        form_start = '2014-01-01'
+        form_end = '2015-01-01'
+        sh_form = sh[form_start : form_end]
+        tpc = {}
+        sp_len = len(self.stock_pool)
+        for i in range(sp_len):
+            for j in range(i+1, sp_len):
+                tpc['{0}-{1}'.format(self.stock_pool[i], self.stock_pool[j])] = self.trading_pair(sh_form, self.stock_pool[i], self.stock_pool[j])                    
+        self.tpc = sorted(tpc.items(), key=lambda x: x[1])
+        for itr in self.tpc:
+            print('{0}: {1}'.format(itr[0], itr[1]))
+
+    def trading_pair(self, sh_form, stock_x, stock_y):        
+        # 中国银行股价
+        PAf = sh_form[stock_x]
+        # 取浦发银行股价
+        PBf = sh_form[stock_y]
+        # 求形成期长度
+        pairf = pd.concat([PAf, PBf], axis=1)
+        form_len = len(pairf)
+        return self.calculate_SSD(PAf, PBf)
+
+    def calculate_SSD(self, price_x, price_y):
+        if price_x is None or price_y is None:
+            print('缺少价格序列')
+            return 
+        r_x = (price_x - price_x.shift(1)) / price_x.shift(1) [1:]
+        r_y = (price_y - price_y.shift(1)) / price_y.shift(1) [1:]
+        #hat_p_x = (r_x + 1).cumsum()
+        hat_p_x = (r_x + 1).cumprod()
+        #hat_p_y = (r_y + 1).cumsum()
+        hat_p_y = (r_y + 1).cumprod()
+        SSD = np.sum( (hat_p_x - hat_p_y)**2 )
+        return SSD
+\end{lstlisting}
+\subsubsection{协整模型}
+协整模型是更常用的一种选择交易对的方法。我们假设股票$X$在第$t$日价格为：
+\begin{equation}
+P_{t}^{X}, \quad t=1, 2, 3, ..., T
+\label{e0402-stock-X-price-t}
+\end{equation}
+定义股票$X$的对数价格序列：
+\begin{equation}
+\log (P_{t}^{X}), \quad t=1, 2, 3, ..., T
+\label{e0402-stock-X-log-price-t}
+\end{equation}
+一般股票$X$的对数价格序列是非平稳时间序列，我们定义股票$X$的一阶差分序列：
+\begin{equation}
+\log (P_{t}^{X}) - \log (P_{t-1}^{X}) = \log \Big( \frac{ P_{t}^{X} }{ P_{t-1}^{X} } \Big), \quad t=1, 2, 3, ..., T
+\label{e0402-stock-X-one-rank-diff-series}
+\end{equation}
+如果一阶差分序列是平稳时间序列，则称股票$X$的价格序列为一阶单整序列。\newline
+股票$X$的在第$t$期单期简单收益率为：
+\begin{equation}
+r_{t}^{X} = \frac{ P_{t}^{X} - P_{t-1}^{X} }{P_{t-1}^{X}} = \frac{ P_{t}^{X} }{P_{t-1}^{X}} - 1
+\label{e0402-stock-X-t-term-simple-return}
+\end{equation}
+我们根据式\ref{e0402-stock-X-one-rank-diff-series}和式\ref{e0402-stock-X-t-term-simple-return}可得：
+\begin{equation}
+\frac{ P_{t}^{X} - P_{t-1}^{X} }{P_{t-1}^{X}} = \frac{ P_{t}^{X} }{P_{t-1}^{X}} = \log(r_{t}^{X} + 1) \approx r_{t}^{X}
+\label{e0402-stock-X-return-with-price-diff}
+\end{equation}
+要判断两支股票历史价格是否具有协整关系，首先要检查两支股票的对数价格序列是否为一阶单整序列，根据式\ref{e0402-stock-X-return-with-price-diff}也就是检查两支股票单期收益率$r_{t}^{i}$是否为平稳时间序列。\newline
+假设股票$X$的对数价格序列$\log \left( P_{t}^{X} \right)$和股票$Y$的对数价格序列$\log \left( P_{t}^{Y} \right)$均为一阶单整序列，则可以用最小二乘法构造一阶回归方程：
+\begin{equation}
+\log \left( P_{t}^{Y} \right) = \alpha + \beta \log \left( P_{t}^{X} \right) + \epsilon _{t}
+\label{e0402-one-rank-regression-equation}
+\end{equation}
+如果我们可以确定回归系数$\hat{\alpha}$和$\hat{\beta}$，则可以得到残差序列：
+\begin{equation}
+\hat{\epsilon} _{t} = \log \left( P_{t}^{Y} \right) - \hat{\alpha} - \hat{\beta} \log \left( P_{t}^{X} \right) 
+\label{e0402-one-rank-regression-equation-residue}
+\end{equation}
+如果我们可以证明$\hat{\epsilon} _{t}$是时间平稳序列，就可以证明股票$X$和股票$Y$的对数价格序列具有一阶协整关系。\newline
+证明交易对是否具有协整关系的程序如下所示：
+\lstset{language=PYTHON, caption={基于协整模型的交易对选择}, label={c0402-cointegration-trading-pair-choose}}
+\begin{lstlisting}
+#
+import numpy as np
+import pandas as pd
+from arch.unitroot import ADF
+import statsmodels.api as sm
+
+class CitpEngine(object):
+    def __init__(self):
+        self.name = 'apps.tp.CitpEngine'
+
+    def exp(self):
+        print('协整模型试验')
+        stock_x = '601988'
+        stock_y = '600000'
+        sh = pd.read_csv('./data/sh50p.csv', index_col='Trddt')
+        sh.index = pd.to_datetime(sh.index)
+        form_start = '2014-01-01'
+        form_end = '2015-01-01'
+        sh_form = sh[form_start : form_end]      
+        # 中国银行股价
+        PAf = sh_form[stock_x]
+        #r = PAf - PAf.shift(1)
+        #adf1 = ADF(r[1:])
+        #print(adf1.summary().as_text())
+        rst = self.calculate_adf(PAf)
+        if not rst:
+            print('中国银行收益率不是时间平稳序列')
+            return 
+        else:
+            print('中国银行收益率是时间平稳序列 ^_^')
+        # 取浦发银行股价
+        PBf = sh_form[stock_y]
+        rst = self.calculate_adf(PBf)
+        if not rst:
+            print('浦发银行收益率不是时间平稳序列')
+            return 
+        else:
+            print('浦发银行收益率是时间平稳序列 ^_^')
+        log_p_x = np.log(PAf)
+        log_p_y = np.log(PBf)
+        model = sm.OLS(log_p_y, sm.add_constant(log_p_x))
+        result = model.fit()
+        print(result.summary())
+        alpha = result.params[0]
+        beta = result.params[1]
+        epsilon = log_p_y - alpha - beta * log_p_x
+        # 残差项均值为零，需要使用trend='nc'
+        adf_epsilon = ADF(epsilon, trend='nc')
+        epsilon_stable = True
+        for val in adf_epsilon.critical_values.values():
+            if adf_epsilon.stat >= val:
+                epsilon_stable = False
+        if not epsilon_stable:
+            print('残差项为非平稳时间序列')
+            return 
+        print('可以使用协整模型来创建交易对')
+
+    def calculate_adf(self, p_x):
+        log_p_x = np.log(p_x)
+        ret_x = log_p_x.diff()[1:]
+        adf_ret_x = ADF(ret_x)
+        for val in adf_ret_x.critical_values.values():
+            if adf_ret_x.stat >= val:
+                return False
+        return True
+\end{lstlisting}
+\subsection{强化学习环境}
+我们为了支持策略回测和与深度元强化学习框架统一，我们采用强化学习环境来做交易回测。我们首先定义强化学习环境，如下所示：
+
+代码解读如下：
+\begin{itemize}
+\item 第9行：action为[3,3]，第1维代表对股票X的0-买入、1-保持、2-卖出，第2维表示0-自有资金、1-5倍杠杆、2-10倍杠杆，例如a[0]=0,a[1]=3，则为买入股票X，使用10倍杠杆，此时需要借钱来买入股票，再例如a[0]=2；
+\item 第10$\sim$12行：股价最低为0元，最高为10000元，shape为(1, 5)就是之前5天的收盘价，为浮点数；
+\item 第行：；
+\end{itemize}
+
+
+
+
+
+
+\section{当前}
+
+
+
+\subsection{交易策略}
+\subsubsection{最小距离法}
+我们在形成期找到了历史价格具有最小距离的交易对，如前例子中的中国银行和浦发银行，假设交易对为股票$X$和$Y$，其标准化价格差为：
+\begin{equation}
+\hat{p}_{t}^{X} - \hat{p}_{t}^{Y}
+\label{e0402-trading-pair-standard-price-diff}
+\end{equation}
+我们可以求出其均值$\mu$和标准差$\sigma$，由于我们例子中的银行股比较稳定，我们定义一个较小的阈值$\lambda=1.2$，我们定义正常的股价标准价差区间为：$\mu \pm \lambda \sigma$，当股价标准价差超出该区间时，我们进行如下操作：
+\begin{itemize}
+\item $\hat{p}_{t}^{X} - \hat{p}_{t}^{Y} < \mu - \lambda \sigma $时：我们卖出股票$Y$，全部买入股票$X$。当股价标准价差回归正常区间时，我们卖出刚买入的股票$X$，买入股票$Y$；
+\item $\hat{p}_{t}^{X} - \hat{p}_{t}^{Y} > \mu - \lambda \sigma $时：我们卖出股票$X$，全部买入股票$Y$。当股价标准价差回归正常区间时，我们卖出刚买入的股票$Y$，买入股票$X$；
+\end{itemize}
+\subsubsection{协整模型}
+
+算法：
+仓位position\_state有以下四种情况：
+\begin{itemize}
+\item 0：股票X和股票Y均为空仓，价格水平为3和-3时；
+\item 1：按比例分别持有X和Y，价格水平为0时；
+\item 2：仅持有X，价格水平为2时；
+\item 3：仅持有Y，价格水平为-2时；
+\end{itemize}
+
+
+\subsection{XGBoost强化学习}
+\subsubsection{数据集定义}
+\subsubsection{强化学习环境RxgbEnv}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

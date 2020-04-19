@@ -1,0 +1,30 @@
+\newpage
+\maketitle
+\begin{center}
+\Large \textbf{第401章 火币网开发实践} \quad 
+\end{center}
+\begin{abstract}
+在本章中，我们将搭建一个火币网交易平台，实验获取行情数据，买入卖出比特币和USDT，实现自动化交易。
+\end{abstract}
+\section{火币网开发环境搭建}
+火币网目前是全球第四大交易所，在国内第一大交易所，除法币与虚拟币交易目前需要采用线下交易外，币币交易非常方便，并且交易量非常大，是一个很好的试验平台。本章中，我们只讨论获取行情数据以及下单买卖，具体交易策略，将在随后章节中逐一详细介绍。
+\subsection{账号注册}
+火币网网址为huobi.com，需要翻墙才能访问，可以通过手机号注册账户。到这个网址申请API：
+\lstset{language=BASH, caption={申请火币API}, label={c401-apply-huobi-api-address}}
+\begin{lstlisting}
+https://www.huobi.com/zh-cn/apikey/
+\end{lstlisting}
+需要记住网站提供的AccessKey和SecretKey。需要同时进行手机号和邮箱认证，如果不提供公网地址的话，API有效期为90天。API文档网址：
+\lstset{language=BASH, caption={火币API文档}, label={c401-apply-huobi-api-doc}}
+\begin{lstlisting}
+https://huobiapi.github.io/docs/spot/v1/cn/#ecae7085ce
+\end{lstlisting}
+另外，启动交易引擎：
+\lstset{language=BASH, caption={启动交易引擎简易方法}, label={c401-run-aqp-engine-bitcoin}}
+\begin{lstlisting}
+cd e:\abiz\aqp
+conda activate py37
+python -m unittest tdd.app.fme.t_fme_engine.TFmeEngine.test_startup
+\end{lstlisting}
+\subsection{获取行情数据}
+\subsection{币币交易}

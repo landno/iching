@@ -1,0 +1,581 @@
+\newpage
+\maketitle
+\begin{center}
+\Large \textbf{第2章 ARIMA模型} \quad 
+\end{center}
+\begin{abstract}
+在本章中我们将首先讲述自回归模型AR(p)，接着讲述移动平均MA(q)，最后讲解ARMA(p,q)，然后将其泛化为ARIMA(p,d,q)，
+分别将这些模型用于实际金融时间序列数据拟合。
+\end{abstract}
+\section{ARIMA模型}
+\subsection{稳定性和模型选择标准}
+\subsubsection{强稳定性}
+在我们以前的讨论中，我们说如果一个时间序列各个时间点所对应的随机变量，只要均值和方差不变，就是平稳时间序列。下面我们对强平稳性进行定义。\newline
+对于一个时间序列$\{ x_{t} \}$，如果对于$\forall t_{i},m$，两个序列：$x_{t_1}, x_{t_2},...,x_{t_N}$和$x_{t_1+m}, x_{t_2+m},...,x_{t_N+m}$的统计特性完全相同，则说明该时间序列为强平稳特性。
+\subsubsection{模型选择标准}
+我们将用AIC来进行模型选择，AIC的全称为：Akaike Information Criterion，我们通常会选择AIC值较小的模型。在实际应用中，还可以使用BIC来进行模型选择，BIC的全称为Bayes Information Criterion。在本章中我们只用AIC来进行模型选择。\newline
+假设统计模型的似然函数有$k$参数，最大似然值为$L$，则AIC定义为：
+\begin{equation}
+AIC=-2\log(L) + 2k
+\label{e000024}
+\end{equation}
+由式\ref{e000024}可知，最大似然值越大或者参数越少，AIC的值越小，模型就越是好模型。
+\subsubsection{ADF检验}
+在前面所讨论的问题中，我们通常根据自相关系数函数ACF和偏自相关系数函数PACF来判断稳定性，但是主观性比较强，我们需要一个客观的标准。\newline
+我们首先来定义时间序列的阶数，对于下面的非平稳时间序列：
+\begin{equation}
+x_{t}=x_{t-1}+w_{t}
+\label{e000036}
+\end{equation}
+其中$w_{t} \sim \mathcal{N}(0, \sigma ^{2})$为白噪声信号，且$x_{0}=0$,我们可以得到其均值为：
+\begin{equation}
+E(x_{t})=E(x_{t-1}+w_{t})=E(x_{t-1})+E(w_{t})=E(x_{t-1})=...=E(x_{0})=0
+\label{e000037}
+\end{equation}
+同样我们可以得到其方差：
+\begin{equation}
+Var(x_{t})=Var(x_{t-1}+w_{t})=Var(x_{t-1})+Var(w_{t})=Var(x_{t-1})+\sigma ^{2}=...=t\sigma ^{2}
+\label{e000038}
+\end{equation}
+$x_{t}$由于其各时间点对应的随机变量的方差随时间变化，因此不是平稳时间序列。\newline
+我们定义1阶差分算子：
+\begin{equation}
+\nabla x_{t} = Bx_{t}=x_{t}-x_{t-1}=w_{t}
+\label{e000039}
+\end{equation}
+对于$Bx_{t}$为白噪声信号，其显然是平稳时间序列，所以我们称$x_{t}$为I(1)的非平稳时间序列。我们可以将其定义扩展到$n$阶：
+\begin{equation}
+Bx_{t}=x_{t-1} \quad B^{2}x_{t}=x_{t-2} \quad B^{3}x_{t}=x_{t-3} \quad ...  \quad B^{n}x_{t}=x_{t-n}
+\label{e000040}
+\end{equation}
+我们还以上面的时间序列$x_{t}=x_{t-1}+w_t$为例，我们可以将其写为：
+\begin{equation}
+x_{t}-x_{t-1}=x_{t}-Bx_{t}=(1-B)x_{t}=w_{t}
+\label{e000041}
+\end{equation}
+式\ref{e000041}中$1-B$为滞后算子多项式，我们令$1-B=0$得出的解为$B=1$，其为单位根，所以其为非平稳时间序列。这一结论可以推广到更一般的情况，对于如下所示的时间序列：
+\begin{equation}
+y_{t}=(1+\rho)y_{t-1}-\rho y_{t-2}+w_{t}
+\label{e000042}
+\end{equation}
+其所对应的滞后算子多项式为：
+\begin{equation}
+y_{t}-(1-\rho)By_{t}+\rho B^{2} y_{t}=w_{t}
+\label{e000043}
+\end{equation}
+令式\ref{e000043}左边为0，得到的解为：$B=1$和$B=\frac{1}{\rho}$，因为其存在单位根，所以其不是平稳时间序列。\newline
+对于任意如下所示时间序列：
+\begin{equation}
+y_{t}=\gamma + \rho _{1}y_{t-1} + \rho _{2}y_{t-2} + ... + \rho _{p}y_{t-p} + w_{t}
+\label{e000044}
+\end{equation}
+其中$w_{t} \sim \mathcal{N}(0, \sigma ^{2})$为独立同分布（i.i.d）噪声信号。
+可以将式\ref{e000044}改写为如下形式：
+\begin{equation}
+y_{t}=\gamma + \rho _{1}By_{t} + \rho _{2}B^{2}y_{t} + ...  + \rho _{p}B^{p}y_{t} + w_{t}
+\label{e000045}
+\end{equation}
+将式\ref{e000045}右边所有包含$y_{t}$的项都移到左边，可以得到下式：
+\begin{equation}
+(1-\rho _{1}B - \rho _{2}B^{2} - .. - \rho _{p}B^{p})y_{t}=\gamma + w_{t}
+\label{e000046}
+\end{equation}
+可以得到其对应的滞后算子多项式方程为：
+\begin{equation}
+1-\rho(B)=1-\rho _{1}B - \rho _{2}B^{2} - .. - \rho _{p}B^{p}=0
+\label{e000047}
+\end{equation}
+解这个方程，如果所有解的绝对值均大于1，则该时间序列为平稳时间序列，如果存在单位根或绝对值小于1的根，则其为非平稳时间序列。\newline
+以上我们讲解的判断时间序列平稳性的原理，在实际应用中，我们通常采用ADF来判断时间序列的平稳性，ADF模型如下所示：
+\begin{equation}
+\Delta y_{t}=\alpha + \beta t + \gamma y_{t-1} + \delta _{1}\Delta y_{t-1} + \delta _{2}\Delta y_{t-2} + ... + \delta _{p}\Delta y_{t-p} + w_{t}
+\label{e000048}
+\end{equation}
+其中$\alpha$对应截距，$\beta$对应趋势，$\delta _{1}\Delta y_{t-1} + \delta _{2}\Delta y_{t-2} + ... + \delta _{p}\Delta y_{t-p}$为ADF的增广项，p为增广项的期数，其值由AIC或BIC算法来决定。原假设$H_{0}$为该序列有单位根是非平稳时间序列：$\gamma = 0$；备择假设$H_{1}$为该序列为平稳时间序列：$\gamma < 0$。\newline
+这部分原理比较复杂，我们在实际应用中，通常使用arch包中的ADF函数来完成检验工作，其函数定义为：
+\begin{equation}
+ADF(y, lags, trend, max_lags, method)
+\label{e000049}
+\end{equation}
+其中：
+\begin{itemize}
+\item y：待判断的时间序列；
+\item lags：滞后期数
+\item trend：用来控制检验模型的类型
+	\begin{itemize}
+	\item 'nc'：不含截距项；
+	\item 'c'：含截距项；
+	\item 'ct'：包含截距项和线性趋势项；
+	\item 'ctt'：包含截距项和线性趋势项以及二次趋势项；
+	\end{itemize}
+\item max\_lags：最大期数
+\item method：常用方法为：'aic'、 'bic'、 't\_stat'
+\end{itemize}
+下面我们通过一个例子来看怎样使用ADF方法，我们以上证综指收益率和收盘价这两个序列为例，我们首先需要安装python的garch库：
+\lstset{language=BASH}
+\begin{lstlisting}
+pip install arch
+\end{lstlisting}
+程序代码如下所示：
+\lstset{language=PYTHON, caption={ADF检验}, label={c000006}}
+\begin{lstlisting}
+import arch.unitroot as unitroot
+......
+    def adf_demo(self):
+        print('ADF检验例程...')
+        data = pd.read_csv(self.data_file, sep='\t', index_col='Trddt')
+        sh_index = data[data.Indexcd==1]
+        sh_index.index = pd.to_datetime(sh_index.index)
+        sh_return = sh_index.Retindex
+        sh_return_adf = unitroot.ADF(sh_return)
+        print(sh_return_adf.summary().as_text())
+        print('stat={0:0.4f}; pvalue={0:0.4f}'.format(sh_return_adf.stat, sh_return_adf.pvalue))
+        print('critical_values:{0}'.format(sh_return_adf.critical_values))
+        print('1%value={0}'.format(sh_return_adf.critical_values['1%']))
+        if sh_return_adf.stat < sh_return_adf.critical_values['1%']:
+            print('上证综指收益率为平稳时间序列 ^_^')
+        else:
+            print('上证综指收益率为平稳时间序列  !!!!!!!!!')
+        sh_close = sh_index.Clsindex
+        sh_close_adf = unitroot.ADF(sh_close)
+        if sh_close_adf.stat < sh_close_adf.critical_values['1%']:
+            print('上证综指收盘价为平稳时间序列 ^_^')
+        else:
+            print('上证综指收盘价为非平稳时间序列 ！！！！！！！')
+\end{lstlisting}
+运行结果如下所示：
+\begin{figure}[H]
+	\caption{自相关系数函数ACF}
+	\label{f000022}
+	\centering
+	\includegraphics[height=5cm]{images/f000022}
+\end{figure}
+由上面的结果可以看出，上证综指收益率是稳定的时间序列，收盘价却是不稳定的时间序列。
+\subsection{自回归模型}
+\subsubsection{背景}
+我们可以扩展随机游走模型，使当前时间点数据不仅依赖前一时间点的值，同时还依赖前p个时间点的值，是这p个值的线性组合，
+这就得到了自回归模型。
+\subsubsection{模型定义}
+自回归模型AR(p)是随机游走模型的扩展，p阶自回归模型定义为：
+\begin{equation}
+x_{t}=\alpha _{1}x_{t-1} + \alpha _{2}x_{t-2} + ... + \alpha _{p}x_{t-p} + w_{t} = \sum_{i=1}^{p} \alpha _{i}x_{t-i} + w_{t}
+\label{e000025}
+\end{equation}
+其中$\{ w_{t} \}$为白噪声，$\alpha _{i} \in R$且$\alpha_{p} \ne 0$。\newline
+当$p=1$且$\alpha _{1}=1$时，自回归模型就退化为随机游走模型。\newline
+为后续讨论方便，我们定义如下运算符：
+\begin{equation}
+\theta _{p}(B)x_{t}=(1-\alpha _{1}B-\alpha _{2}B^{2}-...-\alpha _{p}B^{p})x_{t}=w_{t}
+\label{e000026}
+\end{equation}
+有了上述模型之后，我们就可以直接拿来作预测，如下所示：
+\begin{equation}
+\begin{aligned}
+    \hat{x}_t=\alpha _{1}x_{t-1}+\alpha _{2}x_{t-2}+...+\alpha _{p}x_{t-p} \\
+    \hat{x}_{t+1}=\alpha _{1}\hat{x}_{t}+\alpha _{2}x_{t-1}+...+\alpha _{p}x_{t-p+1}
+\end{aligned}
+\label{e000027}
+\end{equation}
+然后依此类推，可以求出其后n个时间点的预测值。
+\subsubsection{二阶特性}
+我们首先定义特性方程：
+\begin{equation}
+\theta _{p}(B)=0
+\label{e000028}
+\end{equation}
+解这个方程得到的解的绝对值必须大于才是平稳序列。我们可以举几个实例，首先是随机游走序列：
+\paragraph{随机游走}
+根据定义$x_{t}=x_{t-1}+w_{t}$我们可以得到$\alpha _1=1$，其特性方程为$\theta=1-B=0$，其解为$B=1$，因为其解的
+绝对值不大于1，所以其不是平稳模型。
+\paragraph{1阶自回归}
+我们假设自回归模型为$x_{t}=\frac{1}{4}x_{t-1}+w_{t}$，其中$\alpha _1=\frac{1}{4}$，
+其特性方程为$\theta = 1-\frac{1}{4}=0$，其解为$B=4$，该解绝对值大于1，所以其是平稳模型。
+\paragraph{2阶自回归模型}
+我们假设自回归模型为$x_{t}=\frac{1}{2}x_{t-1}+\frac{1}{2}x_{t-2}+w_{t}$，其特性方程为
+$\theta _2(B)=\frac{1}{2}(1-B)(B+2)=0$，则其解为$B=1,-2$，其中一个解为单位根，其绝对值不大于1，因此本模型不是
+平稳模型。虽然本模型不是平稳模型，但是其他2阶自回归模型是完全有可能是平稳模型的。
+\paragraph{二阶特性}
+均值、自协方差、自相关系数定义如下所示：
+\begin{equation}
+\begin{aligned}
+\mu _{x}=E(x_{t})=0 \\
+\gamma _{k}=\sum_{i=1}^{p}\alpha _{i} \gamma _{k-i}, \quad k>0 \\
+\rho _{k} = \sum_{i=1}^{p}\alpha _{i} \rho _{k-i}, \quad k>0
+\end{aligned}
+\label{e000029}
+\end{equation}
+\subsubsection{模拟数据}
+下面我们来模拟一个AR(2)的时间序列，我们的数据生成和拟合代码如下所示：
+\lstset{language=PYTHON, caption={AR数据模拟和拟合示例}, label={c000004}}
+\begin{lstlisting}
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
+from matplotlib.font_manager import FontProperties
+from statsmodels.tsa import stattools
+from statsmodels.graphics import tsaplots
+from statsmodels.tsa.arima_model import ARIMA
+
+class Aqt001(object):
+    def __init__(self):
+        self.name = 'Aqt001'
+        
+    def startup(self):
+        print('ARMA模型...')
+        self.simulate_ar2()
+        
+    def simulate_ar2(self):
+        print('模拟AR(2)')
+        alpha1 = 0.666
+        alpha2 = -0.333
+        wt = np.random.standard_normal(size=1000)
+        x = wt
+        for t in range(2, len(wt)):
+            x[t] = alpha1 * x[t-1] + alpha2 * x[t-2] + wt[t]
+        plt.plot(x, c='b')
+        plt.show()
+        ar2 = stattools.ARMA(x, (2, 0)).fit(disp=False)
+        print('p={0} **** {1}; q={2}***{3}; {4} - {5} - {6}'.format(
+                    ar2.k_ar, ar2.arparams, ar2.k_ma, ar2.maparams, 
+                    ar2.aic, ar2.bic, ar2.hqic)
+        )
+        arima2_0_0 = ARIMA(x, order=(2, 0, 0)).fit(disp=False)
+        print('ARIMA: p={0} **** {1}; q={2}***{3}; {4} - {5} - {6}'. \
+                    format(arima2_0_0.k_ar, arima2_0_0.arparams, 
+                    arima2_0_0.k_ma, arima2_0_0.maparams, 
+                    arima2_0_0.aic, arima2_0_0.bic, 
+                    arima2_0_0.hqic)
+        )
+        resid = arima2_0_0.resid
+        # 绘制ACF
+        acfs = stattools.acf(resid)
+        print(acfs)
+        tsaplots.plot_acf(resid, use_vlines=True, lags=30)
+        plt.title('ACF figure')
+        plt.show()
+        pacfs = stattools.pacf(resid)
+        print(pacfs)
+        tsaplots.plot_pacf(resid, use_vlines=True, lags=30)
+        plt.title('PACF figure')
+        plt.show()
+\end{lstlisting}
+我们首先生成一个1000个数据点的均值为0方差为1的白噪声数据，然后根据$x_{t}=\alpha _{1}x_{t-1} + \alpha _{2}x_{t-2} + w_{t}=0.666 \times x_{t-1} - 0.333 \times x_{t-2} + w_{t}$公式，生成拟合数据。我们绘制该模拟数据图像，接着我们分别用ARMA和ARIMA进行拟合，求出系数，然后计算出模拟选择的参数：AIC、BIC、HQIC的值，最后我们求出模型拟合的残差，并绘制出残差自相关系数函数ACF和偏自相关系数函数PACF的图像。
+模拟数据图像为：
+\begin{figure}[H]
+	\caption{AR2模拟生成数据图}
+	\label{f000013}
+	\centering
+	\includegraphics[height=5cm]{images/f000013}
+\end{figure}
+无论是ARMA还是ARIMA拟合，我们都可以得到较为正确的数据，同时残差的ACF和PACF也表明其是白噪声序列，运行结果如下所示：
+\begin{figure}[H]
+	\caption{程序运行结果}
+	\label{f000014}
+	\centering
+	\includegraphics[height=5cm]{images/f000014}
+\end{figure}
+残差的自相关系数函数ACF图：
+\begin{figure}[H]
+	\caption{残差的自相关系数函数ACF图}
+	\label{f000015}
+	\centering
+	\includegraphics[height=5cm]{images/f000015}
+\end{figure}
+残差的偏自相关系数函数PACF图：
+\begin{figure}[H]
+	\caption{残差的偏自相关系数函数PACF图}
+	\label{f000016}
+	\centering
+	\includegraphics[height=5cm]{images/f000016}
+\end{figure}
+由ACF和PACF图可以看出，我们残差是比较典型的随机白噪声序列，由此可见我们拟合还是很好的。
+\subsubsection{展望}
+在理解了基本理论之后，我们将引入最终的ARIMA模型，并用ARIMA模型来拟合真实上证综指收盘价时间序列，并用我们的拟合模型来预测最后5日的收盘价，在这个实际例子中，看我们模型的表现如何。
+\subsection{ARIMA模型}
+\subsubsection{背景}
+我们不仅可以对当前时间点数值对之前时间点数值进行建模，我们也可以对前面时间点随机噪声对当前时间点的影响进行建模，同时由于原始信号可能非常不平稳，但是我们求出其差值序列后，可能就变为平稳序列了，这就是ARIMA模型要解决的问题。为了讨论ARIMA模型，我们首先介绍差分的概念：
+\begin{equation}
+\begin{aligned}
+\{ x_1,x_2,...,x_N \} \\
+\{d_1^{1},d_2^{1},...,d_{N-1}^{1}\}=\{x_2-x_1,x_3-x_2,...,x_{N}-x_{N-1}\} \\
+\{d_1^{2},d_2^{2},...,d_{N-1}^{2}\}=\{d_2^{1}-d_1^{1},d_3^{1}-d_2^{1},...,d_{N-1}^{1}-d_{N-1}^{1}\}
+\end{aligned}
+\label{e000030}
+\end{equation}
+上式中分别为原始时序信号，然后是一阶差分和二阶差分。
+\subsubsection{模型选择标准}
+\paragraph{BIC定义}
+我们已经介绍过一个模型选择标准AIC（Akaike Information Criterion），其会惩罚参数多的模型，因为这些模型容易产生过拟合（Overfitting）。接下来我们要介绍另一个模型选择参数BIC（Bayes Information Criterion），与AIC相比，其会更倾向于惩罚参数多的模型，同样是值越小越好，BIC定义如下所示：
+\begin{equation}
+BIC=-2\log (L) + k \log N
+\label{e000031}
+\end{equation}
+其中L为似然函数的最大值，k为模型的参数，N为数据点个数。
+\paragraph{Ljung-Box检测}
+我们的缺省假设$H_{0}$为：对于一个拟合的时序信号，对所有滞后时点lags，都是独立同分布（i.i.d）的，即不存在相关性。\newline
+备择假设$H_{a}$为：这些信号不是独立同分布（i.i.d）的，具有相关性。\newline
+我们定义统计量Q：
+\begin{equation}
+Q=n(n+2)\sum_{k=1}^{h} \frac{\hat{\rho}_{k}^{2}}{n-k}
+\label{e000032}
+\end{equation}
+式\ref{e000032}中$n$为时间序列长度，$h$为最大滞后期数，$\rho _{k}$第$k$自相关系数。Ljung-Box检测原理比较复杂，但是在python语言中，经过运算可以求出Q值，以及大于Q值的概率，实际上我们看1$\sim$12滞后期的Q值和大于Q值的概率，如果该概率小于显著水平如0.05时，就拒绝缺省假设（不存在相关性），选择备择假设，否则反之。
+\subsubsection{定义}
+同时考虑之前时间点的信号和噪声值，我们就可以得到如下ARMA模型：
+\begin{equation}
+x_{t}=\alpha _{1}x_{t-1} + \alpha _{2}x_{t-2} + ... + \alpha _{p}x_{t-p} + w_{t} + \beta _1w_{t-1} + \beta _2w_{t-2}+...+ + \beta _{q}w_{t-q}
+\label{e000033}
+\end{equation}
+如果我们对欲研究的信号求出一阶或二阶差分，然后再利用式\ref{e000033}的模型，就是ARIMA模型了。其中$\{ w_{t} \}$为白噪声，其均值为0，方差为$\sigma ^{2}$。\newline
+其特性方程可以表示为：
+\begin{equation}
+\theta _{p}(B)x_{t}=\phi _{q}(B)w_{t}
+\label{e000034}
+\end{equation}
+由上面的讨论可以看出，AR(p)和MA(q)都是ARIMA模型的特殊情况，在同样精度的条件下，ARIMA模型所需参数最小。
+\subsubsection{数据仿真}
+在理解了ARIMA模型定义之后，我们来模拟一下ARIMA过程。假设我们要模拟的ARIMA模型为：
+\begin{equation}
+\begin{aligned}
+x_{t}=\alpha _{1}x_{t-1} + \alpha _{2}x_{t-2} + w_{t} + \beta _1w_{t-1} + \beta _2w_{t-2} \\
+=1.2 \times x_{t-1} - 0.7 \times x_{t-2} + w_{t} - 0.06 \times w_{t-1} - 0.02 \times w_{t-2}
+\end{aligned}
+\label{e000035}
+\end{equation}
+生成模拟数据并利用ARIMA拟合的程序如下所示：
+\lstset{language=PYTHON, caption={AR数据模拟和拟合示例}, label={c000005}}
+\begin{lstlisting}
+    def simulate_arima_p_d_q(self):
+        print('模拟ARIMA(p,d,q)过程')
+        np.random.seed(8)
+        alpha1 = 1.2
+        alpha2 = -0.7
+        beta1 = -0.06
+        beta2 = -0.02
+        w = np.random.standard_normal(size=1000)
+        x = w
+        for t in range(2, len(w)):
+            x[t] = alpha1 * x[t-1] + alpha2*x[t-2] + w[t] + beta1 * w[t-1] + beta2*w[t-2]
+        plt.plot(x, c='b')
+        plt.title('ARIMA(p, d, q) Figure')
+        plt.show()
+        # 查看ACF
+        acfs = stattools.acf(x)
+        print('ARIMA(q,d,q) ACFS:\r\n{0}'.format(acfs))
+        tsaplots.plot_acf(x, use_vlines=True, lags=30)
+        plt.title('ARIMA(p,d,q) ACF')
+        plt.show()
+        # ARIMA拟合
+        min_ABQIC = sys.float_info.max
+        arima_model = None
+        break_loop = False
+        '''
+        for p in range(0, 5):
+            if break_loop:
+                break
+            for q in range(0, 5):
+                print('try {0}, d, {1}...'.format(p, q))
+                try:
+                    arima_p_d_q = ARIMA(x, order=(p, 0, q)).fit(disp=False)
+                    print('..... fit ok')
+                    if arima_p_d_q.aic < min_ABQIC:
+                        print('..... record good model')
+                        min_ABQIC = arima_p_d_q.aic
+                        arima_model = arima_p_d_q
+                        #if 1==p and 1==q:
+                        #    break_loop = True
+                except Exception as ex:
+                    print('.....!!!!!! Exception')
+        print('ARIMA: p={0} **** {1}; q={2}***{3}; {4} - {5} - {6}'. \
+                    format(arima_model.k_ar, arima_model.arparams, 
+                    arima_model.k_ma, arima_model.maparams, 
+                    arima_model.aic, arima_model.bic, 
+                    arima_model.hqic)
+        )
+        '''
+        arima_model = ARIMA(x, order=(2, 0, 2)).fit(disp=False)
+        print('God_View:ARIMA: p={0} **** {1}; q={2}***{3}; {4} - {5} - {6}'. \
+                    format(arima_model.k_ar, arima_model.arparams, 
+                    arima_model.k_ma, arima_model.maparams, 
+                    arima_model.aic, arima_model.bic, 
+                    arima_model.hqic)
+        )
+        resid = arima_model.resid
+        # 绘制ACF
+        acfs = stattools.acf(resid)
+        print(acfs)
+        tsaplots.plot_acf(resid, use_vlines=True, lags=30)
+        plt.title('ARIMA(p,d,q) ACF figure')
+        plt.show()
+        pacfs = stattools.pacf(resid)
+        print(pacfs)
+        tsaplots.plot_pacf(resid, use_vlines=True, lags=30)
+        plt.title('ARIMA(p,d,q) PACF figure')
+        plt.show()
+\end{lstlisting}
+生成的时序信号x为：
+\begin{figure}[H]
+	\caption{原始模拟信号图}
+	\label{f000017}
+	\centering
+	\includegraphics[height=5cm]{images/f000017}
+\end{figure}
+该信号的自相关系数函数ACF图为：
+\begin{figure}[H]
+	\caption{原始模拟信号ACF图}
+	\label{f000018}
+	\centering
+	\includegraphics[height=5cm]{images/f000018}
+\end{figure}
+由图中可以看出，该信号具有非常强的自相关性。\newline
+接着我们用ARIMA模型来模拟该信号，上面程序注释部分为求最佳ARIMA模型的p和q参数，以AIC作为模型选择标准，因为我们知道模型为ARIMA(2,0,2)，所以我们同时也用ARIMA(2,0,2)来进行拟合，程序运行结果如下所示：
+\begin{figure}[H]
+	\caption{程序运行结果}
+	\label{f000019}
+	\centering
+	\includegraphics[height=5cm]{images/f000019}
+\end{figure}
+接着我们求出残差序列，残差序列自相关系数函数ACF图如下所示：
+\begin{figure}[H]
+	\caption{残差自相关系数函数ACF图}
+	\label{f000020}
+	\centering
+	\includegraphics[height=5cm]{images/f000020}
+\end{figure}
+残差序列偏自相关系数函数图PACF如下所示：
+\begin{figure}[H]
+	\caption{残差偏自相关系数函数ACF图}
+	\label{f000021}
+	\centering
+	\includegraphics[height=5cm]{images/f000021}
+\end{figure}
+由图中可以看出，残差序列基本上是白噪声信号。
+\subsubsection{金融数据拟合及预测}
+接下来我们用ARIMA模型，来拟合上证综指收盘价，我们利用除最后3天的数据来得出ARIMA模型，然后利用拟合出的ARIMA模型来预测后3天的收盘价，来看我们模型的性能。根据经验，对于股票的收盘数据来说，采用取对数后再求1阶差分的形式，可以取得更好的效果，因此我们会先对数据进行预处理，然后再来用ARIMA模型来拟合数据。\newline
+程序如下所示：
+\lstset{language=PYTHON, caption={ARIMA数据拟合上证综指收盘价}, label={c000007}}
+\begin{lstlisting}
+    def arima_demo(self):
+        register_matplotlib_converters()
+        data = pd.read_csv(self.data_file, sep='\t', index_col='Trddt')
+        sh_index = data[data.Indexcd==1]
+        sh_index.index = pd.to_datetime(sh_index.index)
+        raw_data = sh_index.Clsindex
+        train_data = raw_data[:-3]
+        close_price = np.log(train_data)
+        plt.plot(close_price)
+        plt.show()
+        print(train_data.head(n=3))
+        # ARIMA拟合
+        min_ABQIC = sys.float_info.max
+        arima_model = None
+        for p in range(0, 5):
+            for q in range(0, 5):
+                print('try {0}, d, {1}...'.format(p, q))
+                try:
+                    arima_p_d_q = ARIMA(close_price, order=(p, 1, q)).fit(disp=False)
+                    print('..... fit ok')
+                    if arima_p_d_q.aic < min_ABQIC:
+                        print('..... record good model')
+                        min_ABQIC = arima_p_d_q.aic
+                        arima_model = arima_p_d_q
+                except Exception as ex:
+                    print('.....!!!!!! {0}'.format(ex))
+        print('ARIMA: p={0} **** {1}; q={2}***{3}; {4} - {5} - {6}'. \
+                    format(arima_model.k_ar, arima_model.arparams, 
+                    arima_model.k_ma, arima_model.maparams, 
+                    arima_model.aic, arima_model.bic, 
+                    arima_model.hqic)
+        )
+        resid = arima_model.resid
+        # 绘制ACF
+        acfs = stattools.acf(resid)
+        print(acfs)
+        tsaplots.plot_acf(resid, use_vlines=True, lags=30)
+        plt.title('ARIMA(p,d,q) ACF figure')
+        plt.show()
+        pacfs = stattools.pacf(resid)
+        print(pacfs)
+        tsaplots.plot_pacf(resid, use_vlines=True, lags=30)
+        plt.title('ARIMA(p,d,q) PACF figure')
+        plt.show()
+        # ADF检验
+        resid_adf = unitroot.ADF(resid)
+        print('stat={0:0.4f} vs 1%_cv={1:0.4f}'.format(resid_adf.stat, resid_adf.critical_values['1%']))
+        if resid_adf.stat < resid_adf.critical_values['1%']:
+            print('resid为稳定时间序列 ^_^')
+        else:
+            print('resid为非稳定时间序列！！！！！')
+        # Ljung-Box检验
+        resid_ljung_box = stattools.q_stat(stattools.acf(resid)[1:12], len(resid))
+        resid_lbv = resid_ljung_box[1][-1]
+        print('resid_ljung_box_value={0}'.format(resid_lbv))
+        # 0.05为显著性水平
+        if resid_lbv < 0.05:
+            print('resid为平稳时间序列 ^_^')
+        else:
+            print('resid为非平稳时间序列！！！！！！！')
+        # 预测
+        y = arima_model.forecast(3)[0] #(len(train_data), len(raw_data), dynamic=True)
+        print('预测值：{0}'.format(np.exp(y)))
+        print('row_data:{0}'.format(raw_data))
+        print('train_data:{0}'.format(train_data))
+\end{lstlisting}
+我们首先绘制出上证综指收盘价曲线：
+\begin{figure}[H]
+	\caption{上证综指收盘价}
+	\label{f000023}
+	\centering
+	\includegraphics[height=5cm]{images/f000023}
+\end{figure}
+接着我们对该数据经过对数差分后，利用ARIMA来进行拟合，得到拟合模型为：
+\begin{figure}[H]
+	\caption{拟合后的ARIMA模型}
+	\label{f000024}
+	\centering
+	\includegraphics[height=2cm]{images/f000024}
+\end{figure}
+残差序列的自相关系数函数ACF图为：
+\begin{figure}[H]
+	\caption{残差序列的自相关系数函数ACF图}
+	\label{f000025}
+	\centering
+	\includegraphics[height=5cm]{images/f000025}
+\end{figure}
+残差序列的偏自相关系数函数PACF图为：
+\begin{figure}[H]
+	\caption{残差序列的偏自相关系数函数PACF图}
+	\label{f000026}
+	\centering
+	\includegraphics[height=5cm]{images/f000026}
+\end{figure}
+进行ADF检验的结果为：
+\begin{figure}[H]
+	\caption{ADF检验的结果}
+	\label{f000027}
+	\centering
+	\includegraphics[height=1cm]{images/f000027}
+\end{figure}
+进行Ljung-Box检验结果为：
+\begin{figure}[H]
+	\caption{Ljung-Box检验结果}
+	\label{f000028}
+	\centering
+	\includegraphics[height=1cm]{images/f000028}
+\end{figure}
+最后我们拿我们的模型进行预测，后三天的预测结果为：
+\begin{figure}[H]
+	\caption{ARIMA模型预测后三天结果}
+	\label{f000029}
+	\centering
+	\includegraphics[height=0.6cm]{images/f000029}
+\end{figure}
+实际值为：
+\begin{figure}[H]
+	\caption{实际收盘价}
+	\label{f000030}
+	\centering
+	\includegraphics[height=2cm]{images/f000030}
+\end{figure}
+我们看到，我们的模型基本预测出了后三天的连涨行情，只不过上涨的幅度有一些小。
