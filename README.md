@@ -1,4 +1,4 @@
-Notes: chinese version at the bottom. ^_^
+Notes: chinese version at the bottom. The chinese version ebook of this project can be found at doc/iching folder. ^_^
 # iching v0.0.1
 Iching is a deep meta reinforcement learning quantitative trading platform.
 ## Why iching
