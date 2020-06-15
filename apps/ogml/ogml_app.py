@@ -14,10 +14,24 @@ class OgmlApp(object):
         self.chpt_file = './work/ogml.pkl'
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
+    def exp(self):
+        print('MAML算法试验代码')
+        k_shot = 1
+        q_query = 1
+        train_data_path = './data/Omniglot/images_background/'
+        dataset = OmniglotDs(train_data_path, k_shot, q_query)
+        print('len={0};'.format(len(dataset)))
+        item = dataset.__getitem__(3)
+
     def startup(self):
         print('Omniglot MAML app startup')
-        # self.train()
-        self.evaluate_on_test_ds()
+        mode = 100000
+        if 1 == mode:
+            self.train()
+        elif 2 == mode:
+            self.evaluate_on_test_ds()
+        elif 100000 == mode:
+            self.exp()
 
     def train(self):
         n_way = 5
@@ -31,7 +45,6 @@ class OgmlApp(object):
         eval_batches = 20
         train_data_path = './data/Omniglot/images_background/'
         dataset = OmniglotDs(train_data_path, k_shot, q_query)
-
         train_set, val_set = torch.utils.data.random_split(OmniglotDs(train_data_path, k_shot, q_query), [3200,656])
         train_loader = DataLoader(train_set,
                                 batch_size = n_way, # 這裡的 batch size 並不是 meta batch size, 而是一個 task裡面會有多少不同的
