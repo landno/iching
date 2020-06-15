@@ -6,6 +6,8 @@ from apps.rxgb.rxgb_app import RxgbApp
 from apps.asml.asml_app import AsmlApp
 from apps.asdk.asdk_app import AsdkApp
 
+import apps.mrla.maml_trpo as mt
+
 def norm_batch_tasks(batch_vals, task_num):
     arrs = []
     batch_size = len(batch_vals) // task_num
@@ -14,17 +16,7 @@ def norm_batch_tasks(batch_vals, task_num):
     return np.hstack(tuple(arrs)).mean(axis=1)
 
 def exp():
-    obs = np.array([
-        1.1, 1.2, 1.3, 1.4, 1.5,
-        2.1, 2.2, 2.3, 2.4, 2.5,
-        3.1, 3.2, 3.3, 3.4, 3.5,
-        4.1, 4.2, 4.3, 4.4, 4.5,
-        5.1, 5.2, 5.3, 5.4, 5.5
-    ])
-    daily_tick = np.array([6.1, 6.2, 6.3, 6.4, 6.5])
-    obs = obs[:20]
-    obs = np.append(obs, [daily_tick])
-    print('X:{0};\r\n{1}'.format(obs.shape, obs))
+    print('learn2learn...v0.0.2')
 
 def main():
     print('易经量化交易系统 v0.0.1')
@@ -32,11 +24,11 @@ def main():
     if 1 == i_debug:
         exp()
         return
-    #app = OgmlApp()
+    app = OgmlApp()
     #app = TpApp()
     #app = RxgbApp()
     #app = AsmlApp()
-    app = AsdkApp()
+    #app = AsdkApp()
     app.startup()
 
 if '__main__' == __name__:
