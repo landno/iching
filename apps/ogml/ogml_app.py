@@ -1,4 +1,5 @@
 #
+import os
 import numpy as np
 import torch
 import torch.nn as nn
@@ -22,10 +23,11 @@ class OgmlApp(object):
         dataset = OmniglotDs(train_data_path, k_shot, q_query)
         print('len={0};'.format(len(dataset)))
         item = dataset.__getitem__(3)
+        print('item: {0};'.format(item.shape))
 
     def startup(self):
         print('Omniglot MAML app startup')
-        mode = 100000
+        mode = 1
         if 1 == mode:
             self.train()
         elif 2 == mode:
@@ -45,7 +47,8 @@ class OgmlApp(object):
         eval_batches = 20
         train_data_path = './data/Omniglot/images_background/'
         dataset = OmniglotDs(train_data_path, k_shot, q_query)
-        train_set, val_set = torch.utils.data.random_split(OmniglotDs(train_data_path, k_shot, q_query), [3200,656])
+        train_set, val_set = torch.utils.data.random_split(
+                    dataset, [3200,656])
         train_loader = DataLoader(train_set,
                                 batch_size = n_way, # 這裡的 batch size 並不是 meta batch size, 而是一個 task裡面會有多少不同的
                                                     # characters，也就是 few-shot classifiecation 的 n_way
@@ -60,29 +63,43 @@ class OgmlApp(object):
         train_iter = iter(train_loader)
         val_iter = iter(val_loader)
         #
-
         meta_model = OgmlModel(1, n_way).to(self.device)
         optimizer = torch.optim.Adam(meta_model.parameters(), lr = meta_lr)
         loss_fn = nn.CrossEntropyLoss().to(self.device)
-
         for epoch in range(max_epoch):
             print("Epoch %d" %(epoch))
             train_meta_loss = []
             train_acc = []
-            for step in tqdm(range(len(train_loader) // (meta_batch_size))): # 這裡的 step 是一次 meta-gradinet update step
-                x, train_iter = self.get_meta_batch(meta_batch_size, k_shot, q_query, train_loader, train_iter)
-                meta_loss, acc = self.train_batch(meta_model, optimizer, x, n_way, k_shot, q_query, loss_fn)
+            for step in tqdm(range(len(train_loader) // 
+                        (meta_batch_size))): # 這裡的 step 是一次 meta-gradinet update step
+                x, train_iter = self.get_meta_batch(
+                    meta_batch_size, k_shot, q_query, 
+                    train_loader, train_iter
+                )
+                print('x: {0} - {1};'.format(type(x), x.shape))
+                os.exit(0)
+                meta_loss, acc = self.train_batch(
+                    meta_model, optimizer, x, n_way, 
+                    k_shot, q_query, loss_fn
+                )
                 train_meta_loss.append(meta_loss.item())
                 train_acc.append(acc)
             print("  Loss    : ", np.mean(train_meta_loss))
             print("  Accuracy: ", np.mean(train_acc))
-
             # 每個 epoch 結束後，看看 validation accuracy 如何  
             # 助教並沒有做 early stopping，同學如果覺得有需要是可以做的 
             val_acc = []
-            for eval_step in tqdm(range(len(val_loader) // (eval_batches))):
-                x, val_iter = self.get_meta_batch(eval_batches, k_shot, q_query, val_loader, val_iter)
-                _, acc = self.train_batch(meta_model, optimizer, x, n_way, k_shot, q_query, loss_fn, inner_train_steps = 3, train = False) # testing時，我們更新三次 inner-step
+            for eval_step in tqdm(range(len(val_loader) // 
+                        (eval_batches))):
+                x, val_iter = self.get_meta_batch(
+                    eval_batches, k_shot, q_query, 
+                    val_loader, val_iter
+                )
+                _, acc = self.train_batch(
+                    meta_model, optimizer, x, n_way, 
+                    k_shot, q_query, loss_fn, 
+                    inner_train_steps = 3, train = False
+                ) # testing時，我們更新三次 inner-step
                 val_acc.append(acc)
             print("  Validation accuracy: ", np.mean(val_acc))
         print('train is OK!')

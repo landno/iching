@@ -23,7 +23,6 @@ class OmniglotDs(Dataset):
         img_list.sort()
         imgs = [self.transform(Image.open(img_file))
                      for img_file in img_list]
-        self.exp001(imgs)
         imgs = torch.stack(imgs)[sample[:self.n]] # 每個 character，取出 k_way + q_query 個
         return imgs
 
@@ -34,14 +33,3 @@ class OmniglotDs(Dataset):
         i = 10
         img = Image.open('./data/Omniglot/images_background/Japanese_(hiragana).0/character13/0500_{0}.png'.format(i))
         img.show()
-
-    def exp001(self, imgs):
-        img1 = torch.stack(imgs)
-        print('{0};'.format(img1.shape))
-        sample = np.arange(20)
-        np.random.shuffle(sample)
-        print('sample: {0};'.format(sample))
-        print('sample[:self.n]: {0};'.format(sample[:self.n]))
-        print('[sample[:self.n]]: {0};'.format([sample[:self.n]]))
-        val = torch.stack(imgs)[sample[:self.n]]
-        print('imgs: {0};'.format(val.shape))
