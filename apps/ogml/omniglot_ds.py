@@ -17,7 +17,6 @@ class OmniglotDs(Dataset):
         sample = np.arange(20)
         np.random.shuffle(sample) # 這裡是為了等一下要 random sample 出我們要的 character
         img_path = self.file_list[idx]
-        print('img_path: {0};'.format(img_path))
         img_list = [f for f in glob.glob(img_path + "**/*.png", 
                     recursive=True)]
         img_list.sort()

@@ -1,5 +1,5 @@
 #
-import os
+import sys
 import numpy as np
 import torch
 import torch.nn as nn
@@ -77,7 +77,7 @@ class OgmlApp(object):
                     train_loader, train_iter
                 )
                 print('x: {0} - {1};'.format(type(x), x.shape))
-                os.exit(0)
+                sys.exit(0)
                 meta_loss, acc = self.train_batch(
                     meta_model, optimizer, x, n_way, 
                     k_shot, q_query, loss_fn
