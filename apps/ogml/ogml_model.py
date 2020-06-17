@@ -13,7 +13,8 @@ def ConvBlock(in_ch, out_ch):
 
 def ConvBlockFunction(x, w, b, w_bn, b_bn):
     x = F.conv2d(x, w, b, padding = 1)
-    x = F.batch_norm(x, running_mean = None, running_var = None, weight = w_bn, bias = b_bn, training = True)
+    x = F.batch_norm(x, running_mean = None, running_var = None, 
+                weight = w_bn, bias = b_bn, training = True)
     x = F.relu(x)
     x = F.max_pool2d(x, kernel_size = 2, stride = 2)
     return x
@@ -40,12 +41,15 @@ class OgmlModel(nn.Module):
         '''
         Arguments:
         x: input images [batch, 1, 28, 28]
-        params: 模型的參數，也就是 convolution 的 weight 跟 bias，以及 batchnormalization 的  weight 跟 bias
+        params: 模型的參數，也就是 convolution 的 weight 跟 bias，
+                以及 batchnormalization 的  weight 跟 bias
                 這是一個 OrderedDict
         '''
         for block in [1, 2, 3, 4]:
-            x = ConvBlockFunction(x, params[f'conv{block}.0.weight'], params[f'conv{block}.0.bias'],
-                                params.get(f'conv{block}.1.weight'), params.get(f'conv{block}.1.bias'))
+            x = ConvBlockFunction(x, params[f'conv{block}.0.weight'], 
+                        params[f'conv{block}.0.bias'],                                 
+                        params.get(f'conv{block}.1.weight'), 
+                        params.get(f'conv{block}.1.bias'))
         x = x.view(x.shape[0], -1)
         x = F.linear(x, params['logits.weight'] , params['logits.bias'])
         return x

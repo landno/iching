@@ -76,13 +76,12 @@ def ConvBlock(in_ch, out_ch):
     return nn.Sequential(nn.Conv2d(in_ch, out_ch, 3, padding = 1),
                         nn.BatchNorm2d(out_ch),
                         nn.ReLU(),
-                        nn.MaxPool2d(kernel_size = 2, stride = 2)) # 原作者在 paper 裡是說她在 omniglot 用的是 strided convolution
-                                                                    # 不過這裡我改成 max pool (mini imagenet 才是 max pool)
-                                                                    # 這並不是你們在 report 第三題要找的 tip
+                        nn.MaxPool2d(kernel_size = 2, stride = 2))
 
 def ConvBlockFunction(x, w, b, w_bn, b_bn):
     x = F.conv2d(x, w, b, padding = 1)
-    x = F.batch_norm(x, running_mean = None, running_var = None, weight = w_bn, bias = b_bn, training = True)
+    x = F.batch_norm(x, running_mean = None, running_var = None, 
+                weight = w_bn, bias = b_bn, training = True)
     x = F.relu(x)
     x = F.max_pool2d(x, kernel_size = 2, stride = 2)
     return x
@@ -109,23 +108,42 @@ class OgmlModel(nn.Module):
         '''
         Arguments:
         x: input images [batch, 1, 28, 28]
-        params: 模型的參數，也就是 convolution 的 weight 跟 bias，以及 batchnormalization 的  weight 跟 bias
+        params: 模型的參數，也就是 convolution 的 weight 跟 bias，
+                以及 batchnormalization 的  weight 跟 bias
                 這是一個 OrderedDict
         '''
         for block in [1, 2, 3, 4]:
-            x = ConvBlockFunction(x, params[f'conv{block}.0.weight'], params[f'conv{block}.0.bias'],
-                                params.get(f'conv{block}.1.weight'), params.get(f'conv{block}.1.bias'))
+            x = ConvBlockFunction(x, params[f'conv{block}.0.weight'], 
+                        params[f'conv{block}.0.bias'],                                 
+                        params.get(f'conv{block}.1.weight'), 
+                        params.get(f'conv{block}.1.bias'))
         x = x.view(x.shape[0], -1)
         x = F.linear(x, params['logits.weight'] , params['logits.bias'])
         return x
 \end{lstlisting}
 OgmlModel有两种工作模式，一种是正常的forward模式，由构造函数、ConvBolock函数和forward方法定义，另一种是functional\_forward模式，由ConvBlockFunction和functional\_forward方法组成，在程序中我们使用的是functional\_forward方法，因此我们只讲解这种工作模式。
 \begin{itemize}
-\item 第行：；
+\item 第20行：生成第一个卷积层，调用ConvBlock方法：
+	\begin{itemize}
+	\item 第2行：调用torch.nn.Conv2d函数，输入信号通道数in\_ch为1，输出信号通道数out\_ch为类别数，这里为5，卷积核为$3 \times 3$，连续零填充为1，即经过卷积后输入信号维度不变；
+	\item 第3行：调用torch.nn.BatchNorm2d函数，进行批归一化，其输入信号格式为[N, C, H, W]，其中N为批次中序号，C为通道数，H为高，W为宽，归一化公式为：
+\begin{equation}
+\tilde{x} = \frac{x-E(x)}{ \sqrt{ Var(x) + \epsilon } } * \gamma + \beta
+\label{e0301-batch-norm-2d-formula}
+\end{equation}
+	\item 第4行：经过ReLU函数；
+	\item 第5行：调用MaxPool2d函数，每$2 \times 2$中取最大值，步长为2，即将图像尺寸缩小为原来的$\frac{1}{4}$；
+	\end{itemize}
+\item 第21行：生成第2个卷积层块；
+\item 第22行：生成第3个卷积层块；
+\item 第23行：生成第4个卷积层块；
+\item 第24行：生成最后的输出层，输出层为类别数，经过第1个卷积层块尺寸变为$14 \times 14$，第2个卷积层块后为$7 \times 7$，经过第3个卷积层块为块为$3 \times 3$，经过第4个卷积块为$1 \times 1$，所以其就只有64个神经元；
 \item 第行：；
 \item 第行：；
 \item 第行：；
 \end{itemize}
+
+\section{当前位置}
 
 
 
