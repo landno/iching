@@ -87,13 +87,13 @@ def ConvBlockFunction(x, w, b, w_bn, b_bn):
     return x
 
 class OgmlModel(nn.Module):
-    def __init__(self, in_ch, k_way):
+    def __init__(self, in_ch, n_way):
         super(OgmlModel, self).__init__()
         self.conv1 = ConvBlock(in_ch, 64)
         self.conv2 = ConvBlock(64, 64)
         self.conv3 = ConvBlock(64, 64)
         self.conv4 = ConvBlock(64, 64)
-        self.logits = nn.Linear(64, k_way)
+        self.logits = nn.Linear(64, n_way)
     
     def forward(self, x):
         x = self.conv1(x)
@@ -123,7 +123,7 @@ class OgmlModel(nn.Module):
 \end{lstlisting}
 OgmlModel有两种工作模式，一种是正常的forward模式，由构造函数、ConvBolock函数和forward方法定义，另一种是functional\_forward模式，由ConvBlockFunction和functional\_forward方法组成，在程序中我们使用的是functional\_forward方法，因此我们只讲解这种工作模式。
 \begin{itemize}
-\item 第20行：生成第一个卷积层，调用ConvBlock方法：
+\item 第18行：生成第一个卷积层，调用ConvBlock方法：
 	\begin{itemize}
 	\item 第2行：调用torch.nn.Conv2d函数，输入信号通道数in\_ch为1，输出信号通道数out\_ch为类别数，这里为5，卷积核为$3 \times 3$，连续零填充为1，即经过卷积后输入信号维度不变；
 	\item 第3行：调用torch.nn.BatchNorm2d函数，进行批归一化，其输入信号格式为[N, C, H, W]，其中N为批次中序号，C为通道数，H为高，W为宽，归一化公式为：
@@ -134,14 +134,104 @@ OgmlModel有两种工作模式，一种是正常的forward模式，由构造函�
 	\item 第4行：经过ReLU函数；
 	\item 第5行：调用MaxPool2d函数，每$2 \times 2$中取最大值，步长为2，即将图像尺寸缩小为原来的$\frac{1}{4}$；
 	\end{itemize}
-\item 第21行：生成第2个卷积层块；
-\item 第22行：生成第3个卷积层块；
-\item 第23行：生成第4个卷积层块；
-\item 第24行：生成最后的输出层，输出层为类别数，经过第1个卷积层块尺寸变为$14 \times 14$，第2个卷积层块后为$7 \times 7$，经过第3个卷积层块为块为$3 \times 3$，经过第4个卷积块为$1 \times 1$，所以其就只有64个神经元；
+\item 第19行：生成第2个卷积层块；
+\item 第20行：生成第3个卷积层块；
+\item 第21行：生成第4个卷积层块；
+\item 第22行：生成最后的输出层，输出层为类别数，经过第1个卷积层块尺寸变为$14 \times 14$，第2个卷积层块后为$7 \times 7$，经过第3个卷积层块为块为$3 \times 3$，经过第4个卷积块为$1 \times 1$，所以其就只有64个神经元；
+\end{itemize}
+下面我们来看训练过程，首先来看训练入口方法：
+\lstset{language=PYTHON, caption={训练入口类}, label={c0301-train-main}}
+\begin{lstlisting}
+def train(self):
+        n_way = 5
+        k_shot = 1
+        q_query = 1
+        inner_train_steps = 1
+        inner_lr = 0.4
+        meta_lr = 0.001
+        meta_batch_size = 32
+        max_epoch = 4 #40
+        eval_batches = 20
+        train_data_path = './data/Omniglot/images_background/'
+        dataset = OmniglotDs(train_data_path, k_shot, q_query)
+        train_set, val_set = torch.utils.data.random_split(
+                    dataset, [3200,656])
+        train_loader = DataLoader(train_set,
+                                batch_size = n_way,
+                                num_workers = 8,
+                                shuffle = True,
+                                drop_last = True)
+        val_loader = DataLoader(val_set,
+                                batch_size = n_way,
+                                num_workers = 8,
+                                shuffle = True,
+                                drop_last = True)
+        train_iter = iter(train_loader)
+        val_iter = iter(val_loader)
+        #
+        meta_model = OgmlModel(1, n_way).to(self.device)
+        optimizer = torch.optim.Adam(meta_model.parameters(), lr = meta_lr)
+        loss_fn = nn.CrossEntropyLoss().to(self.device)
+        for epoch in range(max_epoch):
+            print("Epoch %d" %(epoch))
+            train_meta_loss = []
+            train_acc = []
+            for step in tqdm(range(len(train_loader) // 
+                        (meta_batch_size))): 
+                x, train_iter = self.get_meta_batch(
+                    meta_batch_size, k_shot, q_query, 
+                    train_loader, train_iter
+                )
+                print('x: {0} - {1};'.format(type(x), x.shape))
+                sys.exit(0)
+                meta_loss, acc = self.train_batch(
+                    meta_model, optimizer, x, n_way, 
+                    k_shot, q_query, loss_fn
+                )
+                train_meta_loss.append(meta_loss.item())
+                train_acc.append(acc)
+            print("  Loss    : ", np.mean(train_meta_loss))
+            print("  Accuracy: ", np.mean(train_acc))
+            val_acc = []
+            for eval_step in tqdm(range(len(val_loader) // 
+                        (eval_batches))):
+                x, val_iter = self.get_meta_batch(
+                    eval_batches, k_shot, q_query, 
+                    val_loader, val_iter
+                )
+                _, acc = self.train_batch(
+                    meta_model, optimizer, x, n_way, 
+                    k_shot, q_query, loss_fn, 
+                    inner_train_steps = 3, train = False
+                )
+                val_acc.append(acc)
+            print("  Validation accuracy: ", np.mean(val_acc))
+        print('train is OK!')
+        torch.save(meta_model.state_dict(), self.chpt_file)
+\end{lstlisting}
+代码解读如下所示：
+\begin{itemize}
+\item 第行：；
+\item 第行：；
 \item 第行：；
 \item 第行：；
 \item 第行：；
 \end{itemize}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 \section{当前位置}
 

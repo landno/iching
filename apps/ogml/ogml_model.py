@@ -20,13 +20,13 @@ def ConvBlockFunction(x, w, b, w_bn, b_bn):
     return x
 
 class OgmlModel(nn.Module):
-    def __init__(self, in_ch, k_way):
+    def __init__(self, in_ch, n_way):
         super(OgmlModel, self).__init__()
         self.conv1 = ConvBlock(in_ch, 64)
         self.conv2 = ConvBlock(64, 64)
         self.conv3 = ConvBlock(64, 64)
         self.conv4 = ConvBlock(64, 64)
-        self.logits = nn.Linear(64, k_way)
+        self.logits = nn.Linear(64, n_way)
     
     def forward(self, x):
         x = self.conv1(x)
