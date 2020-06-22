@@ -228,11 +228,62 @@ def train(self):
 \item 第50行：显示迷你批次的平均精度值；
 \item 第52、53行：循环处理验证数据集每个迷你批次：
 \item 第54$\sim$57行：取出一个迷你批次；
-\item 第58$\sim$62行：求出每个迷你批次上的精度；
+\item 第58$\sim$62行：求出每个迷你批次上的精度，这里只有前向传播过程，没有误差反向传播；
 \item 第63行：形成迷你批次精度列表；
 \item 第64行：打印批你批次平均精度；
 \item 第66行：训练完成后保存网络状态；
 \end{itemize}
+下面我们来看迷你批次的训练过程，如下所示：
+\lstset{language=PYTHON, caption={迷你批次训练过程}, label={c0301-train-batch}}
+\begin{lstlisting}
+def train_batch(self, model, optimizer, x, n_way, k_shot, 
+            q_query, loss_fn, inner_train_steps= 1, 
+            inner_lr = 0.4, train = True):
+    """
+    Args:
+    x is the input omniglot images for a meta_step, shape = [batch_size, n_way * (k_shot + q_query), 1, 28, 28]
+    n_way: 每個分類的 task 要有幾個 class
+    k_shot: 每個類別在 training 的時候會有多少張照片
+    q_query: 在 testing 時，每個類別會用多少張照片 update
+    """
+    criterion = loss_fn
+    task_loss = []
+    task_acc = []
+    for meta_batch in x:
+        train_set = meta_batch[:n_way*k_shot]
+        val_set = meta_batch[n_way*k_shot:]
+        fast_weights = OrderedDict(model.named_parameters())
+        for inner_step in range(inner_train_steps):
+            train_label = self.create_label(n_way, k_shot).to(self.device)
+            logits = model.functional_forward(train_set, fast_weights)
+            loss = criterion(logits, train_label)
+            grads = torch.autograd.grad(loss, fast_weights.values(), create_graph = True)
+            fast_weights = OrderedDict((name, param - inner_lr * grad)
+                              for ((name, param), grad) in zip(fast_weights.items(), grads))
+        val_label = self.create_label(n_way, q_query).to(self.device)
+        logits = model.functional_forward(val_set, fast_weights)
+        loss = criterion(logits, val_label)
+        task_loss.append(loss)
+        acc = np.asarray([torch.argmax(logits, -1).cpu().numpy() == val_label.cpu().numpy()]).mean()
+        task_acc.append(acc)
+    model.train()
+    optimizer.zero_grad()
+    meta_batch_loss = torch.stack(task_loss).mean()
+    if train:
+        meta_batch_loss.backward()
+        optimizer.step()
+    task_acc = np.mean(task_acc)
+    return meta_batch_loss, task_acc
+\end{lstlisting}
+代码解读如下所示：
+\begin{itemize}
+\item 第行：；
+\item 第行：；
+\item 第行：；
+\item 第行：；
+\item 第行：；
+\end{itemize}
+
 
 
 
