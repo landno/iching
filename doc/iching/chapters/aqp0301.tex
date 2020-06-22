@@ -211,9 +211,17 @@ def train(self):
 \end{lstlisting}
 代码解读如下所示：
 \begin{itemize}
-\item 第行：；
-\item 第行：；
-\item 第行：；
+\item 第2$\sim$10行：定义所需变量，n\_way代表类别数，k\_shot是迷你批次中support set的样本数，q\_query是迷你批次中query set的样本数；
+\item 第11$\sim$26行：定义训练数据集和验证数据集；
+\item 第28行：创建模型，创建卷积层和最后的全连接层；
+\item 第29行：定义优化器；
+\item 第30行：定义代价函数为交叉熵函数；
+\item 第31$\sim$61行：训练指定epochs遍：
+\item 第33行：train\_meta\_loss；
+\item 第34行：train\_acc；
+\item 第35$\sim$48行：循环处理每个迷你批次：
+\item 第37$\sim$40行：取出一个迷你批次，其形状为[32, 10, 1, 28, 28]，迷你批次大小为32，共有5个类别，每个类别有support set（这里是1个样本），query set（这里是1个样本），所以10=n\_way * (support\_set + query\_set)；
+\item 第43$\sim$46行：训练一个迷你批次，包括一次前向传播和误差反向传播过程；
 \item 第行：；
 \item 第行：；
 \end{itemize}

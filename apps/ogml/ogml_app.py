@@ -76,8 +76,6 @@ class OgmlApp(object):
                     meta_batch_size, k_shot, q_query, 
                     train_loader, train_iter
                 )
-                print('x: {0} - {1};'.format(type(x), x.shape))
-                sys.exit(0)
                 meta_loss, acc = self.train_batch(
                     meta_model, optimizer, x, n_way, 
                     k_shot, q_query, loss_fn
