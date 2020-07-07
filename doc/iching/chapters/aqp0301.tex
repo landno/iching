@@ -285,9 +285,12 @@ def train_batch(self, model, optimizer, x, n_way, k_shot,
 \item 第19行：生成正确答案，对于很多任务，正确答案在数据集中已经定义好了；
 \item 第20行：调用模型前向传播过程，产生网络输出，代码见表\ref{c0301-ogml-model}：
 	\begin{itemize}
-	\item 第41$\sim$45行：循环处理四个卷积块，调用ConvBlockFunction函数，从命名参数中：conv1.0.weight和conv1.0.bias为卷操作参数，；
+	\item 第41$\sim$45行：循环处理四个卷积块，调用ConvBlockFunction函数，从命名参数中：conv1.0.weight和conv1.0.bias为卷操作参数，；conv1.1.weight和conv1.1.bias为ReLU操作的参数；
+	\item 第46行：将其转为[batch\_idx, sample]形式；
+	\item 第47行：经过全连接层产生网络输出；
 	\end{itemize}
-\item 第行：；
+	其最后会产生网络层的输出信号。
+\item 第21行：利用交叉熵函数计算代价函数值；
 \item 第行：；
 \item 第行：；
 \end{itemize}
