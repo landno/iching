@@ -125,7 +125,7 @@ OgmlModel有两种工作模式，一种是正常的forward模式，由构造函�
 \begin{itemize}
 \item 第18行：生成第一个卷积层，调用ConvBlock方法：
 	\begin{itemize}
-	\item 第2行：调用torch.nn.Conv2d函数，输入信号通道数in\_ch为1，输出信号通道数out\_ch为类别数，这里为5，卷积核为$3 \times 3$，连续零填充为1，即经过卷积后输入信号维度不变；
+	\item 第2行：调用torch.nn.Conv2d函数，输入信号通道数in\_ch为1，输出信号通道数out\_ch为类别数，这里为5，卷积核为$3 \times 3$，边缘零填充为1，即经过卷积后输入信号维度不变；
 	\item 第3行：调用torch.nn.BatchNorm2d函数，进行批归一化，其输入信号格式为[N, C, H, W]，其中N为批次中序号，C为通道数，H为高，W为宽，归一化公式为：
 \begin{equation}
 \tilde{x} = \frac{x-E(x)}{ \sqrt{ Var(x) + \epsilon } } * \gamma + \beta
@@ -277,8 +277,16 @@ def train_batch(self, model, optimizer, x, n_way, k_shot,
 \end{lstlisting}
 代码解读如下所示：
 \begin{itemize}
-\item 第行：；
-\item 第行：；
+\item 第14行：每个meta\_batch的形状为[10, 1, 28, 28]；
+\item 第15行：前n\_way*k\_shot个样本为train\_set（或者叫support set）；
+\item 第16行：其余样本为验证数据集（或者叫query set）；
+\item 第17行：拷贝一份模型参数，在本例中只有一个任务，所以只拷贝了一份，如果是多个任务，需要拷贝多份；
+\item 第18行：内循环通常为一次，也可能是多次（以下是对于一个任务的处理流程）:
+\item 第19行：生成正确答案，对于很多任务，正确答案在数据集中已经定义好了；
+\item 第20行：调用模型前向传播过程，产生网络输出，代码见表\ref{c0301-ogml-model}：
+	\begin{itemize}
+	\item 第41$\sim$45行：循环处理四个卷积块，调用ConvBlockFunction函数，从命名参数中：conv1.0.weight和conv1.0.bias为卷操作参数，；
+	\end{itemize}
 \item 第行：；
 \item 第行：；
 \item 第行：；

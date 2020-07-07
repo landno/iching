@@ -14,10 +14,12 @@ def norm_batch_tasks(batch_vals, task_num):
 
 def exp():
     print('learn2learn...v0.0.2')
+    block = 1
+    print(f'value={block}s')
 
 def main():
     print('易经量化交易系统 v0.0.1')
-    i_debug = 10
+    i_debug = 1
     if 1 == i_debug:
         exp()
         return
