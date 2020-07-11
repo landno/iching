@@ -64,6 +64,11 @@ class OgmlApp(object):
         val_iter = iter(val_loader)
         #
         meta_model = OgmlModel(1, n_way).to(self.device)
+        nps = meta_model.named_parameters()
+        for np in nps:
+            print('{0}: {1};'.format(np[0], type(np[1])))
+        print('^_^ bye ^_^')
+        sys.exit(0)
         optimizer = torch.optim.Adam(meta_model.parameters(), lr = meta_lr)
         loss_fn = nn.CrossEntropyLoss().to(self.device)
         for epoch in range(max_epoch):
@@ -76,8 +81,6 @@ class OgmlApp(object):
                     meta_batch_size, k_shot, q_query, 
                     train_loader, train_iter
                 )
-                print('^_^ bye ^_^')
-                sys.exit(0)
                 meta_loss, acc = self.train_batch(
                     meta_model, optimizer, x, n_way, 
                     k_shot, q_query, loss_fn
