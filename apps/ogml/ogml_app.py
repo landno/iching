@@ -36,13 +36,14 @@ class OgmlApp(object):
             self.exp()
 
     def train(self):
+        torch.cuda.set_device(0)
         n_way = 5
         k_shot = 1
         q_query = 1
         inner_train_steps = 1
         inner_lr = 0.4
         meta_lr = 0.001
-        meta_batch_size = 32
+        meta_batch_size = 8 #32
         max_epoch = 4 #40
         eval_batches = 20
         train_data_path = './data/Omniglot/images_background/'
@@ -52,23 +53,17 @@ class OgmlApp(object):
         train_loader = DataLoader(train_set,
                                 batch_size = n_way, # 這裡的 batch size 並不是 meta batch size, 而是一個 task裡面會有多少不同的
                                                     # characters，也就是 few-shot classifiecation 的 n_way
-                                num_workers = 8,
+                                num_workers = 4,
                                 shuffle = True,
                                 drop_last = True)
         val_loader = DataLoader(val_set,
                                 batch_size = n_way,
-                                num_workers = 8,
+                                num_workers = 4,
                                 shuffle = True,
                                 drop_last = True)
         train_iter = iter(train_loader)
         val_iter = iter(val_loader)
-        #
         meta_model = OgmlModel(1, n_way).to(self.device)
-        nps = meta_model.named_parameters()
-        for np in nps:
-            print('{0}: {1};'.format(np[0], type(np[1])))
-        print('^_^ bye ^_^')
-        sys.exit(0)
         optimizer = torch.optim.Adam(meta_model.parameters(), lr = meta_lr)
         loss_fn = nn.CrossEntropyLoss().to(self.device)
         for epoch in range(max_epoch):
