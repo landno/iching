@@ -44,7 +44,7 @@ class OgmlApp(object):
         max_epoch = 4 #40
         eval_batches = 20
         train_data_path = './data/Omniglot/images_background/'
-        dataset = OmniglotDs(train_data_path, k_shot, q_query)
+        dataset = OmniglotDs(train_data_path, n_way, k_shot, q_query)
         train_set, val_set = torch.utils.data.random_split(
                     dataset, [3200,656])
         train_loader = DataLoader(train_set,
@@ -79,6 +79,7 @@ class OgmlApp(object):
                 )
                 train_meta_loss.append(meta_loss.item())
                 train_acc.append(acc)
+                print('^_^ bye ^_^')
                 sys.exit(0)
             print("  Loss    : ", np.mean(train_meta_loss))
             print("  Accuracy: ", np.mean(train_acc))
@@ -109,7 +110,7 @@ class OgmlApp(object):
         q_query = 1
         test_batches = 20
         meta_lr = 0.001
-        test_loader = DataLoader(OmniglotDs(test_data_path, k_shot, q_query),
+        test_loader = DataLoader(OmniglotDs(test_data_path, n_way, k_shot, q_query),
                                 batch_size = n_way,
                                 num_workers = 8,
                                 shuffle = True,

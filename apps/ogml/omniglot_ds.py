@@ -7,11 +7,13 @@ import glob
 import numpy as np
 
 class OmniglotDs(Dataset):
-    def __init__(self, data_dir, k_way, q_query):
+    def __init__(self, data_dir, n_way, k_shot, q_query):
         self.file_list = [f for f in glob.glob(data_dir + 
                     '**/character*', recursive=True)]
         self.transform = transforms.Compose([transforms.ToTensor()])
-        self.n = k_way + q_query
+        self.n_way = n_way
+        self.n = k_shot + q_query
+        self.k_shot = k_shot
 
     def __getitem__(self, idx):
         sample = np.arange(20)
@@ -22,8 +24,11 @@ class OmniglotDs(Dataset):
         img_list.sort()
         imgs = [self.transform(Image.open(img_file))
                      for img_file in img_list]
-        imgs = torch.stack(imgs)[sample[:self.n]] # 每個 character，取出 k_way + q_query 個
-        y = torch.randn(self.n)
+        imgs = torch.stack(imgs)[sample[:self.n]] # 每個 character，取出 k_shot + q_query 個
+
+        t1 = torch.tensor([])
+        y = t1.new_full((self.n,), idx // self.n_way, dtype=torch.long)
+        print('y.shape: {0};'.format(y.shape))
         return imgs, y
 
     def __len__(self):
