@@ -145,9 +145,11 @@ class OgmlApp(object):
         criterion = loss_fn
         task_loss = [] # 這裡面之後會放入每個 task 的 loss 
         task_acc = []  # 這裡面之後會放入每個 task 的 loss 
-        for meta_batch in x:
+        for meta_batch, meta_batch_y in zip(x, y):
             train_set = meta_batch[:n_way*k_shot] # train_set 是我們拿來 update inner loop 參數的 data
+            train_y = meta_batch_y[:n_way*k_shot]
             val_set = meta_batch[n_way*k_shot:]   # val_set 是我們拿來 update outer loop 參數的 data
+            val_y = meta_batch_y[n_way*k_shot:]
             fast_weights = OrderedDict(model.named_parameters()) # 在 inner loop update 參數時，我們不能動到實際參數，因此用 fast_weights 來儲存新的參數 θ'
             for inner_step in range(inner_train_steps): # 這個 for loop 是 Algorithm2 的 line 7~8
                                                 # 實際上我們 inner loop 只有 update 一次 gradients，不過某些 task 可能會需要多次 update inner loop 的 θ'，
