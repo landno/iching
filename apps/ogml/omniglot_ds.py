@@ -23,7 +23,8 @@ class OmniglotDs(Dataset):
         imgs = [self.transform(Image.open(img_file))
                      for img_file in img_list]
         imgs = torch.stack(imgs)[sample[:self.n]] # 每個 character，取出 k_way + q_query 個
-        return imgs
+        y = torch.randn(self.n)
+        return imgs, y
 
     def __len__(self):
         return len(self.file_list)   

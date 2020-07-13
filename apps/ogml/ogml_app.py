@@ -24,7 +24,7 @@ class OgmlApp(object):
 
     def startup(self):
         print('Omniglot MAML app startup')
-        mode = 100000
+        mode = 1
         if 1 == mode:
             self.train()
         elif 2 == mode:
@@ -69,7 +69,7 @@ class OgmlApp(object):
             train_acc = []
             for step in tqdm(range(len(train_loader) // 
                         (meta_batch_size))): # 這裡的 step 是一次 meta-gradinet update step
-                x, train_iter = self.get_meta_batch(
+                x, y, train_iter = self.get_meta_batch(
                     meta_batch_size, k_shot, q_query, 
                     train_loader, train_iter
                 )
@@ -79,6 +79,7 @@ class OgmlApp(object):
                 )
                 train_meta_loss.append(meta_loss.item())
                 train_acc.append(acc)
+                sys.exit(0)
             print("  Loss    : ", np.mean(train_meta_loss))
             print("  Accuracy: ", np.mean(train_acc))
             # 每個 epoch 結束後，看看 validation accuracy 如何  
@@ -86,7 +87,7 @@ class OgmlApp(object):
             val_acc = []
             for eval_step in tqdm(range(len(val_loader) // 
                         (eval_batches))):
-                x, val_iter = self.get_meta_batch(
+                x, y, val_iter = self.get_meta_batch(
                     eval_batches, k_shot, q_query, 
                     val_loader, val_iter
                 )
@@ -173,14 +174,15 @@ class OgmlApp(object):
 
     def get_meta_batch(self, meta_batch_size, k_shot, q_query, data_loader, iterator):
         data = []
+        y = torch.tensor([])
         for _ in range(meta_batch_size):
             try:
-                task_data = iterator.next()  # 一筆 task_data 就是一個 task 裡面的 data，大小是 [n_way, k_shot+q_query, 1, 28, 28]
+                task_data, y = iterator.next()  # 一筆 task_data 就是一個 task 裡面的 data，大小是 [n_way, k_shot+q_query, 1, 28, 28]
             except StopIteration:
                 iterator = iter(data_loader)
-                task_data = iterator.next()
+                task_data, y = iterator.next()
             train_data = task_data[:, :k_shot].reshape(-1, 1, 28, 28)
             val_data = task_data[:, k_shot:].reshape(-1, 1, 28, 28)
             task_data = torch.cat((train_data, val_data), 0)
             data.append(task_data)
-        return torch.stack(data).to(self.device), iterator
+        return torch.stack(data).to(self.device), y, iterator
