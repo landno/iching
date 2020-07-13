@@ -26,7 +26,6 @@ class OmniglotDs(Dataset):
                      for img_file in img_list]
         imgs = torch.stack(imgs)[sample[:self.n]] # 每個 character，取出 k_shot + q_query 個
         y = torch.tensor([]).new_full((self.n,), idx % self.n_way, dtype=torch.long)
-        print('y.shape: {0}; {1};    idx={2};'.format(y.shape, y, idx))
         return imgs, y
 
     def __len__(self):
