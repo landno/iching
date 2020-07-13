@@ -17,17 +17,14 @@ class OgmlApp(object):
 
     def exp(self):
         print('MAML算法试验代码')
-        k_shot = 1
-        q_query = 1
-        train_data_path = './data/Omniglot/images_background/'
-        dataset = OmniglotDs(train_data_path, k_shot, q_query)
-        print('len={0};'.format(len(dataset)))
-        item = dataset.__getitem__(3)
-        print('item: {0};'.format(item.shape))
+        n_way = 5
+        k_shot = 2
+        v1 = torch.arange(n_way).repeat_interleave(k_shot).long()
+        print('{0};'.format(v1))
 
     def startup(self):
         print('Omniglot MAML app startup')
-        mode = 1
+        mode = 100000
         if 1 == mode:
             self.train()
         elif 2 == mode:
