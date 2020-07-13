@@ -74,7 +74,7 @@ class OgmlApp(object):
                     train_loader, train_iter
                 )
                 meta_loss, acc = self.train_batch(
-                    meta_model, optimizer, x, n_way, 
+                    meta_model, optimizer, x, y, n_way, 
                     k_shot, q_query, loss_fn
                 )
                 train_meta_loss.append(meta_loss.item())
@@ -93,7 +93,7 @@ class OgmlApp(object):
                     val_loader, val_iter
                 )
                 _, acc = self.train_batch(
-                    meta_model, optimizer, x, n_way, 
+                    meta_model, optimizer, x, y, n_way, 
                     k_shot, q_query, loss_fn, 
                     inner_train_steps = 3, train = False
                 ) # testing時，我們更新三次 inner-step
@@ -124,15 +124,15 @@ class OgmlApp(object):
         loss_fn = nn.CrossEntropyLoss().to(self.device)
 
         for test_step in tqdm(range(len(test_loader) // (test_batches))):
-            x, val_iter = self.get_meta_batch(test_batches, k_shot, q_query, test_loader, test_iter)
-            _, acc = self.train_batch(meta_model, optimizer, x, n_way, k_shot, q_query, loss_fn, inner_train_steps = 3, train = False) # testing時，我們更新三次 inner-step
+            x, y, val_iter = self.get_meta_batch(test_batches, k_shot, q_query, test_loader, test_iter)
+            _, acc = self.train_batch(meta_model, optimizer, x, y, n_way, k_shot, q_query, loss_fn, inner_train_steps = 3, train = False) # testing時，我們更新三次 inner-step
             test_acc.append(acc)
         print("  Testing accuracy: ", np.mean(test_acc))
 
     def create_label(self, n_way, k_shot):
         return torch.arange(n_way).repeat_interleave(k_shot).long()
 
-    def train_batch(self, model, optimizer, x, n_way, k_shot, 
+    def train_batch(self, model, optimizer, x, y, n_way, k_shot, 
                 q_query, loss_fn, inner_train_steps= 1, 
                 inner_lr = 0.4, train = True):
         """
