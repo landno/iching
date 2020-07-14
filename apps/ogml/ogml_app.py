@@ -155,6 +155,8 @@ class OgmlApp(object):
                                                 # 實際上我們 inner loop 只有 update 一次 gradients，不過某些 task 可能會需要多次 update inner loop 的 θ'，
                                                 # 所以我們還是用 for loop 來寫
                 train_label = self.create_label(n_way, k_shot).to(self.device)
+                print('train_labe: {0};'.format(train_label))
+                print('y: {0};'.format(y))
                 logits = model.functional_forward(train_set, fast_weights)
                 loss = criterion(logits, train_label)
                 grads = torch.autograd.grad(loss, fast_weights.values(), create_graph = True) # 這裡是要計算出 loss 對 θ 的微分 (∇loss)    
