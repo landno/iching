@@ -1,15 +1,18 @@
 #
 import numpy as np
 import torch
+from torchvision import transforms
 from torch.utils.data import Dataset
 from PIL import Image
 import cv2
 
+
 class StanfordCarDs(Dataset):
     def __init__(self):
         self.name = 'apps.tcv.StanfordCarDs'
+        transforms.Normalize
 
-    def opencv_to_PIL(self, img_file):
+    def opencv_to_tensor(self, img_file):
         cv2_ndarr = cv2.imread(img_file)
         print('cv2_ndarr: {0}; {1};'.format(type(cv2_ndarr), cv2_ndarr.shape))
         cv2.imshow('origin', cv2_ndarr)
