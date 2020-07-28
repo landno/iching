@@ -5,7 +5,7 @@ from apps.ogml.ogml_app import OgmlApp
 from apps.rxgb.rxgb_app import RxgbApp
 from apps.asml.asml_app import AsmlApp
 from apps.asdk.asdk_app import AsdkApp
-from apps.tcv.stanford_car_ds import StanfordCarDs
+from apps.tcv.tcv_app import TcvApp
 
 
 def norm_batch_tasks(batch_vals, task_num):
@@ -16,8 +16,7 @@ def norm_batch_tasks(batch_vals, task_num):
     return np.hstack(tuple(arrs)).mean(axis=1)
 
 def exp():
-    ds = StanfordCarDs()
-    ds.opencv_to_PIL('E:/work/tcv/projects/datasets/StandCars/train/1/000001.jpg')
+    pass
 
 def main():
     print('易经量化交易系统 v0.0.1')
@@ -25,11 +24,12 @@ def main():
     if 1 == i_debug:
         exp()
         return
-    app = OgmlApp()
+    #app = OgmlApp()
     #app = TpApp()
     #app = RxgbApp()
     #app = AsmlApp()
     #app = AsdkApp()
+    app = TcvApp()
     app.startup()
 
 if '__main__' == __name__:
