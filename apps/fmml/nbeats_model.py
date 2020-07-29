@@ -26,3 +26,4 @@ class NbeatsModel(torch.nn.Module):
         h2 = self.h2(h1)
         h3 = self.h3(h2)
         h4 = self.h4(h3)
+        return h4

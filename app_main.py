@@ -21,7 +21,7 @@ def exp():
 
 def main():
     print('易经量化交易系统 v0.0.1')
-    i_debug = 1
+    i_debug = 10
     if 1 == i_debug:
         exp()
         return
