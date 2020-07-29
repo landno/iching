@@ -6,6 +6,7 @@ from apps.rxgb.rxgb_app import RxgbApp
 from apps.asml.asml_app import AsmlApp
 from apps.asdk.asdk_app import AsdkApp
 from apps.tcv.tcv_app import TcvApp
+from apps.fmml.fmml_app import FmmlApp
 
 
 def norm_batch_tasks(batch_vals, task_num):
@@ -29,7 +30,8 @@ def main():
     #app = RxgbApp()
     #app = AsmlApp()
     #app = AsdkApp()
-    app = TcvApp()
+    #app = TcvApp()
+    app = FmmlApp()
     app.startup()
 
 if '__main__' == __name__:
