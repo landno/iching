@@ -10,10 +10,11 @@ class NbeatsModel(torch.nn.Module):
         '''
         super(NbeatsModel, self).__init__()
         self.name = 'apps.fmml.NbeatsModel'
-        self.block = BasicBlock(loopback_window, future_horizen)
+        #self.block = BasicBlock(loopback_window, future_horizen)
+        self.stack = BlockStack()
 
     def forward(self, x):
-        y_hat, x_hat = self.block(x)
+        y_hat, x_hat = self.stack(x)
         return y_hat, x_hat
 
 class BasicBlock(torch.nn.Module):
@@ -49,3 +50,28 @@ class BasicBlock(torch.nn.Module):
         theta_b = self.theta_b(h4)
         x_hat = self.x_hat(theta_b)
         return y_hat, x_hat
+
+class BlockStack(torch.nn.Module):
+    def __init__(self, block_num=3, loopback_window=5, future_horizen=2):
+        super(BlockStack, self).__init__()
+        self.block_num = block_num
+        self.blocks = [
+            BasicBlock(loopback_window, future_horizen),
+            BasicBlock(loopback_window, future_horizen),
+            BasicBlock(loopback_window, future_horizen)
+        ]
+
+    def forward(self, x):
+        x_hat_prev = x
+        y_sum = None
+        x_hat = None
+        for idx in range(self.block_num):
+            y_hat, x_hat = self.blocks[idx](x_hat_prev)
+            aux = x_hat
+            x_hat -= x_hat_prev
+            x_hat_prev = aux
+            if y_sum is None:
+                y_sum = y_hat
+            else:
+                y_sum += y_hat
+        return y_sum, x_hat
