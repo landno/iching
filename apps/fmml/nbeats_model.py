@@ -49,3 +49,10 @@ class BasicBlock(torch.nn.Module):
         theta_b = self.theta_b(h4)
         x_hat = self.x_hat(theta_b)
         return y_hat, x_hat
+
+class ForwardHead(torch.nn.Module):
+    def __init__(self):
+        super(ForwardHead, self).__init__()
+
+    def forward(self, x):
+        return None
