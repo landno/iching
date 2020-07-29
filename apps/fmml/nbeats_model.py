@@ -56,3 +56,10 @@ class ForwardHead(torch.nn.Module):
 
     def forward(self, x):
         return None
+
+class BackcastHead(torch.nn.Module):
+    def __init__(self):
+        super(BackcastHead, self).__init__()
+
+    def forward(self, x):
+        return None
