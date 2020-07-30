@@ -71,9 +71,7 @@ class BlockStack(torch.nn.Module):
         x_hat = None
         for idx in range(self.block_num):
             y_hat, x_hat = self.blocks[idx](x_hat_prev)
-            aux = x_hat
-            x_hat -= x_hat_prev
-            x_hat_prev = aux
+            x_hat_prev -= x_hat
             if y_sum is None:
                 y_sum = y_hat
             else:
