@@ -35,20 +35,24 @@ class BasicBlock(torch.nn.Module):
         self.h2 = torch.nn.Linear(fc_layers[0], fc_layers[1])
         self.h3 = torch.nn.Linear(fc_layers[1], fc_layers[2])
         self.h4 = torch.nn.Linear(fc_layers[2], fc_layers[3])
-        self.theta_f = torch.nn.Linear(fc_layers[3], theta_f_num, bias=False)
-        self.y_hat = torch.nn.Linear(theta_f_num, future_horizen)
-        self.theta_b = torch.nn.Linear(fc_layers[3], theta_b_num, bias=False)
-        self.x_hat = torch.nn.Linear(theta_b_num, self.loopback_window)
+        #self.theta_f = torch.nn.Linear(fc_layers[3], theta_f_num, bias=False)
+        #self.y_hat = torch.nn.Linear(theta_f_num, future_horizen)
+        self.y_hat = torch.nn.Linear(fc_layers[3], future_horizen)
+        #self.theta_b = torch.nn.Linear(fc_layers[3], theta_b_num, bias=False)
+        #self.x_hat = torch.nn.Linear(theta_b_num, self.loopback_window)
+        self.x_hat = torch.nn.Linear(fc_layers[3], self.loopback_window)
 
     def forward(self, x):
         h1 = self.h1(x)
         h2 = self.h2(h1)
         h3 = self.h3(h2)
         h4 = self.h4(h3)
-        theta_f = self.theta_f(h4)
-        y_hat = self.y_hat(theta_f)
-        theta_b = self.theta_b(h4)
-        x_hat = self.x_hat(theta_b)
+        #theta_f = self.theta_f(h4)
+        #y_hat = self.y_hat(theta_f)
+        y_hat = self.y_hat(h4)
+        #theta_b = self.theta_b(h4)
+        #x_hat = self.x_hat(theta_b)
+        x_hat = self.x_hat(h4)
         return y_hat, x_hat
 
 class BlockStack(torch.nn.Module):
