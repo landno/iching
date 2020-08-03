@@ -2,7 +2,7 @@
 import torch
 
 class NbeatsModel(torch.nn.Module):
-    def __init__(self, loopback_window=5, future_horizen=2):
+    def __init__(self, block_num=3, stack_num=2, loopback_window=5, future_horizen=2):
         '''
         参数说明：
             loopback_window 向前看几个时间点
@@ -10,12 +10,25 @@ class NbeatsModel(torch.nn.Module):
         '''
         super(NbeatsModel, self).__init__()
         self.name = 'apps.fmml.NbeatsModel'
-        #self.block = BasicBlock(loopback_window, future_horizen)
-        self.stack = BlockStack()
+        self.stack_num = stack_num
+        self.block_stacks = []
+        for _ in range(self.stack_num):
+            self.block_stacks.append(
+                BlockStack(block_num, loopback_window, future_horizen)
+            )
 
     def forward(self, x):
-        y_hat, x_hat = self.stack(x)
-        return y_hat, x_hat
+        x_hat_prev = x
+        y_sum = None
+        x_hat = None
+        for idx in range(self.stack_num):
+            y_hat, x_hat = self.block_stacks[idx](x_hat_prev)
+            x_hat_prev -= x_hat
+            if y_sum is None:
+                y_sum = y_hat
+            else:
+                y_sum += y_hat
+        return y_sum
 
 class BasicBlock(torch.nn.Module):
     def __init__(self, loopback_window=5, future_horizen=2):
@@ -76,4 +89,4 @@ class BlockStack(torch.nn.Module):
                 y_sum = y_hat
             else:
                 y_sum += y_hat
-        return x_hat
+        return y_sum, x_hat
