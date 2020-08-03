@@ -59,21 +59,21 @@ class BlockStack(torch.nn.Module):
     def __init__(self, block_num=3, loopback_window=5, future_horizen=2):
         super(BlockStack, self).__init__()
         self.block_num = block_num
-        self.blocks = [
-            BasicBlock(loopback_window, future_horizen),
-            BasicBlock(loopback_window, future_horizen),
-            BasicBlock(loopback_window, future_horizen)
-        ]
+        self.basic_blocks = []
+        for _ in range(self.block_num):
+            self.basic_blocks.append(
+                BasicBlock(loopback_window, future_horizen)
+            )
 
     def forward(self, x):
         x_hat_prev = x
         y_sum = None
         x_hat = None
         for idx in range(self.block_num):
-            y_hat, x_hat = self.blocks[idx](x_hat_prev)
+            y_hat, x_hat = self.basic_blocks[idx](x_hat_prev)
             x_hat_prev -= x_hat
             if y_sum is None:
                 y_sum = y_hat
             else:
                 y_sum += y_hat
-        return y_sum, x_hat
+        return x_hat
