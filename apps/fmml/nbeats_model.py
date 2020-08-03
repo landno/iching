@@ -28,7 +28,7 @@ class NbeatsModel(torch.nn.Module):
                 y_sum = y_hat
             else:
                 y_sum += y_hat
-        return y_sum
+        return y_sum, x_hat
 
 class BasicBlock(torch.nn.Module):
     def __init__(self, loopback_window=5, future_horizen=2):
