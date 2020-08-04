@@ -104,6 +104,9 @@ class BrokerBase(with_metaclass(MetaBroker, object)):
                             leverage=leverage, automargin=automargin)
         self.comminfo[name] = comm
 
+    def set_commission_obj(self, comm_obj, name=None):
+        self.comminfo[name] = comm_obj
+
     def addcommissioninfo(self, comminfo, name=None):
         '''Adds a ``CommissionInfo`` object that will be the default for all assets if
         ``name`` is ``None``'''
