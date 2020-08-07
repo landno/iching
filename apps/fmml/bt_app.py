@@ -21,7 +21,6 @@ class BtApp(object):
         cerebro.adddata(data)  # 将数据加载至回测系统
         cerebro.broker.setcash(start_cash) # 设置初始资金
         cerebro.broker.set_commission_obj(AshareCommInfo())
-        print(cerebro.broker)
         print('期初净值: {0:.2f}'.format(cerebro.broker.getvalue()))
         cerebro.run()
         print('期末净值: {0:.2f}'.format(cerebro.broker.getvalue()))
@@ -47,7 +46,6 @@ class TestStrategy(bt.Strategy):
         self.order = None
 
     def next(self):
-        self.log('收盘价：{:.2f}'.format(self.dataclose[0]))
         if self.order:
             return
         if not self.position:
@@ -56,6 +54,7 @@ class TestStrategy(bt.Strategy):
                         self.log('生成买入订单：{0:.2f}'.format(self.dataclose[0]))
                         self.order = self.buy()
         else:
+            print('position: {0};'.format(self.position))
             if len(self) >= (self.bar_executed + 5):
                 self.log('生成卖出订单：{0:.2f}'.format(self.dataclose[0]))
                 self.order = self.sell()

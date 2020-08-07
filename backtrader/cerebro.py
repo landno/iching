@@ -1058,17 +1058,17 @@ class Cerebro(with_metaclass(MetaParams, object)):
         self._dopreload = self.p.preload
         self._exactbars = int(self.p.exactbars)
 
-        if self._exactbars:
+        if self._exactbars: # = 0
             self._dorunonce = False  # something is saving memory, no runonce
             self._dopreload = self._dopreload and self._exactbars < 1
 
         self._doreplay = self._doreplay or any(x.replaying for x in self.datas)
-        if self._doreplay:
+        if self._doreplay: # False
             # preloading is not supported with replay. full timeframe bars
             # are constructed in realtime
             self._dopreload = False
 
-        if self._dolive or self.p.live:
+        if self._dolive or self.p.live: # _dolive = False
             # in this case both preload and runonce must be off
             self._dorunonce = False
             self._dopreload = False
@@ -1076,7 +1076,7 @@ class Cerebro(with_metaclass(MetaParams, object)):
         self.runwriters = list()
 
         # Add the system default writer if requested
-        if self.p.writer is True:
+        if self.p.writer is True: # p.writer = False
             wr = WriterFile()
             self.runwriters.append(wr)
 
@@ -1090,7 +1090,7 @@ class Cerebro(with_metaclass(MetaParams, object)):
 
         self.runstrats = list()
 
-        if self.signals:  # allow processing of signals
+        if self.signals:  # allow processing of signals =[]
             signalst, sargs, skwargs = self._signal_strat
             if signalst is None:
                 # Try to see if the 1st regular strategy is a signal strategy
@@ -1120,15 +1120,20 @@ class Cerebro(with_metaclass(MetaParams, object)):
             self.addstrategy(Strategy)
 
         iterstrats = itertools.product(*self.strats)
-        if not self._dooptimize or self.p.maxcpus == 1:
+        if not self._dooptimize or self.p.maxcpus == 1: # _dooptimize=False maxcpus=None
+            print('in case 1')
             # If no optimmization is wished ... or 1 core is to be used
             # let's skip process "spawning"
             for iterstrat in iterstrats:
+                print('{0}: {1};'.format(type(iterstrat), iterstrat))
                 runstrat = self.runstrategies(iterstrat)
+                print('step 100')
                 self.runstrats.append(runstrat)
+                print('step 101')
                 if self._dooptimize:
                     for cb in self.optcbs:
                         cb(runstrat)  # callback receives finished strategy
+                print('step 102')
         else:
             if self.p.optdatas and self._dopreload and self._dorunonce:
                 for data in self.datas:
@@ -1151,6 +1156,7 @@ class Cerebro(with_metaclass(MetaParams, object)):
                 for data in self.datas:
                     data.stop()
 
+        print('step 103')
         if not self._dooptimize:
             # avoid a list of list for regular cases
             return self.runstrats[0]
@@ -1167,27 +1173,36 @@ class Cerebro(with_metaclass(MetaParams, object)):
         '''
         Internal method invoked by ``run``` to run a set of strategies
         '''
+        print('runstrategies 1')
         self._init_stcount()
 
         self.runningstrats = runstrats = list()
+        print('runstrategies 2 self.stores={0};'.format(self.stores))
         for store in self.stores:
+            print('runstrategies store: {0};'.format(store))
             store.start()
 
+        print('runstrategies 3')
         if self.p.cheat_on_open and self.p.broker_coo:
             # try to activate in broker
             if hasattr(self._broker, 'set_coo'):
                 self._broker.set_coo(True)
+        print('runstrategies 4')
 
         if self._fhistory is not None:
             self._broker.set_fund_history(self._fhistory)
+        print('runstrategies 5')
 
         for orders, onotify in self._ohistory:
             self._broker.add_order_history(orders, onotify)
+        print('runstrategies 6')
 
         self._broker.start()
+        print('runstrategies 7')
 
         for feed in self.feeds:
             feed.start()
+        print('runstrategies 8')
 
         if self.writers_csv:
             wheaders = list()
@@ -1201,7 +1216,7 @@ class Cerebro(with_metaclass(MetaParams, object)):
 
         # self._plotfillers = [list() for d in self.datas]
         # self._plotfillers2 = [list() for d in self.datas]
-
+        print('runstrategies 9')
         if not predata:
             for data in self.datas:
                 data.reset()
@@ -1211,6 +1226,7 @@ class Cerebro(with_metaclass(MetaParams, object)):
                 if self._dopreload:
                     data.preload()
 
+        print('runstrategies 10')
         for stratcls, sargs, skwargs in iterstrat:
             sargs = self.datas + list(sargs)
             try:
@@ -1224,14 +1240,17 @@ class Cerebro(with_metaclass(MetaParams, object)):
                 strat.set_tradehistory()
             runstrats.append(strat)
 
+        print('runstrategies 11')
         tz = self.p.tz
         if isinstance(tz, integer_types):
             tz = self.datas[tz]._tz
         else:
             tz = tzparse(tz)
 
+        print('runstrategies 12')
         if runstrats:
             # loop separated for clarity
+            print('runstrategies 13')
             defaultsizer = self.sizers.get(None, (None, None, None))
             for idx, strat in enumerate(runstrats):
                 if self.p.stdstats:
@@ -1267,35 +1286,46 @@ class Cerebro(with_metaclass(MetaParams, object)):
                     if writer.p.csv:
                         writer.addheaders(strat.getwriterheaders())
 
+            print('runstrategies 14')
             if not predata:
                 for strat in runstrats:
                     strat.qbuffer(self._exactbars, replaying=self._doreplay)
 
+            print('runstrategies 15')
             for writer in self.runwriters:
                 writer.start()
 
             # Prepare timers
             self._timers = []
             self._timerscheat = []
+            print('runstrategies 16')
             for timer in self._pretimers:
                 # preprocess tzdata if needed
+                print('runstrategies 17')
                 timer.start(self.datas[0])
+                print('runstrategies 18')
 
                 if timer.params.cheat:
                     self._timerscheat.append(timer)
                 else:
                     self._timers.append(timer)
 
+            print('runstrategies 19')
             if self._dopreload and self._dorunonce:
                 if self.p.oldsync:
+                    print('runstrategies 19.1')
                     self._runonce_old(runstrats)
                 else:
+                    print('runstrategies 19.2')
                     self._runonce(runstrats)
             else:
                 if self.p.oldsync:
+                    print('runstrategies 19.3')
                     self._runnext_old(runstrats)
                 else:
+                    print('runstrategies 19.4')
                     self._runnext(runstrats)
+            print('runstrategies 20')
 
             for strat in runstrats:
                 strat._stop()
@@ -1648,6 +1678,7 @@ class Cerebro(with_metaclass(MetaParams, object)):
         Strategies are still invoked on a pseudo-event mode in which ``next``
         is called for each data arrival
         '''
+        print('cerebro._runonce 1')
         for strat in runstrats:
             strat._once()
             strat.reset()  # strat called next by next - reset lines
@@ -1656,11 +1687,13 @@ class Cerebro(with_metaclass(MetaParams, object)):
         # has not moved forward all datas/indicators/observers that
         # were homed before calling once, Hence no "need" to do it
         # here again, because pointers are at 0
+        print('cerebro._runonce 2')
         datas = sorted(self.datas,
                        key=lambda x: (x._timeframe, x._compression))
 
         while True:
             # Check next incoming date in the datas
+            print('cerebro._runonce 3')
             dts = [d.advance_peek() for d in datas]
             dt0 = min(dts)
             if dt0 == float('inf'):
@@ -1669,6 +1702,7 @@ class Cerebro(with_metaclass(MetaParams, object)):
             # Timemaster if needed be
             # dmaster = datas[dts.index(dt0)]  # and timemaster
             slen = len(runstrats[0])
+            print('cerebro._runonce 4: {0};'.format(dts))
             for i, dti in enumerate(dts):
                 if dti <= dt0:
                     datas[i].advance()
