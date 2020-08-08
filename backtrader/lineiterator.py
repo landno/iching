@@ -342,6 +342,7 @@ class LineIterator(with_metaclass(MetaLineIterator, LineSeries)):
         all datas/indicators have been meet. The default behavior is to call
         next
         '''
+        print('yantao_debug_001  lineiterator.py Ln345 LineIterator.nextstart')
 
         # Called once for 1st full calculation - defaults to regular next
         self.next()
