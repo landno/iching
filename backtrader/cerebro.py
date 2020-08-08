@@ -1678,7 +1678,6 @@ class Cerebro(with_metaclass(MetaParams, object)):
         Strategies are still invoked on a pseudo-event mode in which ``next``
         is called for each data arrival
         '''
-        print('cerebro._runonce 1')
         for strat in runstrats:
             strat._once()
             strat.reset()  # strat called next by next - reset lines
@@ -1687,14 +1686,13 @@ class Cerebro(with_metaclass(MetaParams, object)):
         # has not moved forward all datas/indicators/observers that
         # were homed before calling once, Hence no "need" to do it
         # here again, because pointers are at 0
-        print('cerebro._runonce 2')
         datas = sorted(self.datas,
                        key=lambda x: (x._timeframe, x._compression))
 
         while True:
             # Check next incoming date in the datas
             print('cerebro._runonce 3')
-            dts = [d.advance_peek() for d in datas]
+            dts = [d.advance_peek() for d in datas] # dts means data timestamp?
             dt0 = min(dts)
             if dt0 == float('inf'):
                 break  # no data delivers anything
@@ -1702,7 +1700,6 @@ class Cerebro(with_metaclass(MetaParams, object)):
             # Timemaster if needed be
             # dmaster = datas[dts.index(dt0)]  # and timemaster
             slen = len(runstrats[0])
-            print('cerebro._runonce 4: {0};'.format(dts))
             for i, dti in enumerate(dts):
                 if dti <= dt0:
                     datas[i].advance()
@@ -1713,19 +1710,23 @@ class Cerebro(with_metaclass(MetaParams, object)):
 
             self._check_timers(runstrats, dt0, cheat=True)
 
-            if self.p.cheat_on_open:
+            if self.p.cheat_on_open: # 不执行
                 for strat in runstrats:
                     strat._oncepost_open()
                     if self._event_stop:  # stop if requested
                         return
 
+            print('cerebro._runonce learn 1')
             self._brokernotify()
             if self._event_stop:  # stop if requested
                 return
+            print('cerebro._runonce learn 2')
 
             self._check_timers(runstrats, dt0, cheat=False)
 
+            print('cerebro._runonce learn 3')
             for strat in runstrats:
+                print('cerebro._runonce learn 4: {0};'.format(strat))
                 strat._oncepost(dt0)
                 if self._event_stop:  # stop if requested
                     return

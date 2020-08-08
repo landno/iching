@@ -251,6 +251,7 @@ class LineBuffer(LineSingle):
             value (variable): value to be set in new positins
             size (int): How many extra positions to enlarge the buffer
         '''
+        print('linebuffer.py Ln254 forward.......')
         self.idx += size
         self.lencount += size
 

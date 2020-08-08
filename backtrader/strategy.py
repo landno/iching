@@ -290,30 +290,39 @@ class Strategy(with_metaclass(MetaStrategy, StrategyBase)):
             self.prenext_open()
 
     def _oncepost(self, dt):
+        print('strategy._oncepost 1')
         for indicator in self._lineiterators[LineIterator.IndType]:
             if len(indicator._clock) > len(indicator):
                 indicator.advance()
 
         if self._oldsync:
+            print('strategy._oncepost 2')
             # Strategy has not been reset, the line is there
             self.advance()
         else:
+            print('strategy._oncepost 3')
             # strategy has been reset to beginning. advance step by step
             self.forward()
 
         self.lines.datetime[0] = dt
+        print('strategy._oncepost 4')
         self._notify()
+        print('strategy._oncepost 6')
 
         minperstatus = self._getminperstatus()
         if minperstatus < 0:
+            print('strategy._oncepost 7')
             self.next()
         elif minperstatus == 0:
+            print('strategy._oncepost 8')
             self.nextstart()  # only called for the 1st value
         else:
+            print('strategy._oncepost 9')
             self.prenext()
 
         self._next_analyzers(minperstatus, once=True)
         self._next_observers(minperstatus, once=True)
+        print('strategy._oncepost 10')
 
         self.clear()
 

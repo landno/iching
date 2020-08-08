@@ -250,7 +250,9 @@ class Lines(object):
         '''
         Proxy line operation
         '''
+        print('lineseries.py Ln253 forward...')
         for line in self.lines:
+            print('@@@@@ line:{0}; value: {1}; size={2};'.format(type(line), value, size))
             line.forward(value, size=size)
 
     def backwards(self, size=1, force=False):
@@ -551,6 +553,7 @@ class LineSeries(with_metaclass(MetaLineSeries, LineMultiple)):
     # reach them using "super" which will not call __getattr__ and
     # LineSeriesStub (see below) already uses super
     def forward(self, value=NAN, size=1):
+        print('##### lineseries.py Ln555 forward... self.lines: {0};'.format(type(self.lines)))
         self.lines.forward(value, size)
 
     def backwards(self, size=1, force=False):
@@ -601,6 +604,7 @@ class LineSeriesStub(LineSeries):
 
     # Only execute the operations below if the object is not a slave
     def forward(self, value=NAN, size=1):
+        print('lineseries.py Ln606 forward...')
         if not self.slave:
             super(LineSeriesStub, self).forward(value, size)
 
