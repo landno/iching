@@ -17,8 +17,6 @@ class AsdkTickData(TickData):
         total_volume 成交量
         '''
         super(AsdkTickData, self).__init__(symbol, timestamp)
-        self.symbol = symbol
-        self.timestamp = timestamp
         self.open_price = open_price
         self.high_price = high_price
         self.low_price = low_price
