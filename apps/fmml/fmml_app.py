@@ -10,14 +10,18 @@ from apps.fmml.nbeats_model import NbeatsModel
 from apps.fmml.as1m_ds import As1mDs
 from apps.fmml.bt_app import BtApp
 
+from fas.bktr.bktr_engine import BktrEngine
+
 class FmmlApp(object):
     def __init__(self):
         self.name = 'apps.fmml.FmmlApp'
     
     def startup(self):
         print('金融市场元学习平台v0.0.8')
-        app = BtApp()
-        app.startup()
+        #app = BtApp()
+        #app.startup()
+        engine = BktrEngine()
+        engine.startup()
 
 
 
