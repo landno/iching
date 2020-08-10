@@ -2,6 +2,7 @@
 
 from fas.bktr.asdk_tick_data import AsdkTickData
 from fas.bktr.market_data import MarketData
+from fas.bktr.market_data_source import MarketDataSource
 
 
 class BktrEngine(object):
@@ -15,5 +16,5 @@ class BktrEngine(object):
             tick_data.open_price, tick_data.close_price, 
             tick_data.symbol, tick_data.timestamp
         ))
-        md = MarketData()
-        md.add_close_price('a1', 1002, 21.2)
+        mds = MarketDataSource()
+        mds.start_market_simulation()
