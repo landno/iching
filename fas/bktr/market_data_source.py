@@ -14,4 +14,6 @@ class MarketDataSource(object):
     def start_market_simulation(self):
         print('开始获了行情数据')
         data = ak.stock_zh_a_daily(symbol=self.symbol, adjust='hfq')
-        print(data)
+        for time, row in data.iterrows():
+            print('time: {0}, {1};'.format(time, row['open']))
+            break
