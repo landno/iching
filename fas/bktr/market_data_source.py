@@ -17,7 +17,7 @@ class MarketDataSource(object):
                 time, open=row['open'], high=row['high'],
                 low=row['low'], close=row['close'],
                 outstanding_share=row['outstanding_share'],
-                turn_over=row['turn_over']
+                turnover=row['turnover']
             )
             self.market_data.set_tick_data(self.symbol, tick_data)
             if self.event_tick is not None:

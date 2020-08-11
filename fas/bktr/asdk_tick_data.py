@@ -7,7 +7,7 @@ class AsdkTickData(TickData):
     def __init__(self, symbol, timestamp, 
                 open=0.0, high=0.0, low=0.0, 
                 close=0.0, volume=0.0,
-                outstanding_share=0.0, turn_over=0.0):
+                outstanding_share=0.0, turnover=0.0):
         '''
         symbol 股票代码
         timestamp 时间点
@@ -24,4 +24,4 @@ class AsdkTickData(TickData):
         self.close = close
         self.volume = volume
         self.outstanding_share = outstanding_share
-        self.turn_over = turn_over
+        self.turnover = turnover

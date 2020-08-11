@@ -3,6 +3,7 @@
 from fas.bktr.asdk_tick_data import AsdkTickData
 from fas.bktr.market_data import MarketData
 from fas.bktr.market_data_source import MarketDataSource
+from fas.bktr.order import Order
 
 
 class BktrEngine(object):
@@ -18,3 +19,5 @@ class BktrEngine(object):
         ))
         mds = MarketDataSource()
         mds.start_market_simulation()
+        order = Order('2020-08-11 13:09:00', '5002', 100, True, Order.OT_MARKET_ORDER, 2.5)
+        print(order)
