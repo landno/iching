@@ -12,7 +12,7 @@ class Strategy(object):
     def event_order(self, order):
         pass
 
-    def event_position(self, position):
+    def event_position(self, positions):
         pass
 
     def send_order(self, timestamp, symbol, is_buy, quant):

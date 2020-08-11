@@ -7,7 +7,7 @@ class MarketData(object):
         self.name = 'fas.bktr.MarketData'
         self.__tick_datas = {}
 
-    def get_tick_data(self, symbol, timestamp):
+    def get_tick_data(self, symbol):
         if symbol not in self.__tick_datas:
             return None
         else:
