@@ -2,10 +2,8 @@
 import datetime as dt
 import pandas as pd
 from fas.bktr.position import Position
-from fas.bktr.asdk_tick_data import AsdkTickData
-from fas.bktr.market_data import MarketData
+from fas.bktr.mean_reverting_strategy import MeanRevertingStrategy
 from fas.bktr.market_data_source import MarketDataSource
-from fas.bktr.order import Order
 
 
 class BktrEngine(object):
@@ -23,11 +21,17 @@ class BktrEngine(object):
 
     def startup(self):
         print('易经量化回测引擎 v0.0.1')
-        pos = Position()
-        pos.event_fill('2020-08-11 16:09:00', True, 100, 8.81)
-        print(pos)
-        pos.update_unrealized_pnl(1000.0)
-        print(pos)
+        self.strategy = MeanRevertingStrategy(self.symbol)
+        self.strategy.event_sendorder = self.evthandler_order
+        mds = MarketDataSource()
+        mds.event_tick = self.evthandler_tick
+        mds.symbol = self.symbol
+        mds.start_market_simulation()
+
+
+
+
+
 
     def get_timestamp(self):
         return self.current_prices.get_timestamp(self.symbol)
