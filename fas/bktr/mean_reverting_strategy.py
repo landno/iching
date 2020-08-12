@@ -10,20 +10,21 @@ class MeanRevertingStrategy(Strategy):
         self.lookback_intervals = lookback_intervals
         self.buy_threshold = buy_threshold
         self.sell_threshold = sell_threshold
+        self.prices = pd.DataFrame()
         self.is_long, self.is_short = False, False
 
     def event_position(self, positions):
         if self.symbol in positions:
             position = positions[self.symbol]
             self.is_long = True if position.net_quants > 0 else False
-            self.is_short = True if position.net_quants <= 0 else False
+            #self.is_short = True if position.net_quants <= 0 else False
 
     def event_tick(self, market_data):
         self.store_prices(market_data)
         if len(self.prices) < self.lookback_intervals:
             return
         signal_value = self.calculate_z_score()
-        timestamp = market_data.get_tick_data().timestamp
+        timestamp = market_data.get_tick_data(self.symbol).timestamp
         if signal_value < self.buy_threshold:
             self.on_buy_signal(timestamp)
         elif signal_value > self.sell_threshold:
@@ -48,8 +49,8 @@ class MeanRevertingStrategy(Strategy):
 
     def on_buy_signal(self, timestamp):
         if not self.is_long:
-            self.send_order(self.symbol, 100, True, timestamp)
+            self.send_order(timestamp, self.symbol, True, 100)
 
     def on_sell_signal(self, timestamp):
-        if not self.is_short:
-            self.send_order(self.symbol, 100, False, timestamp)
+        if self.is_long:
+            self.send_order(timestamp, self.symbol, False, 100)

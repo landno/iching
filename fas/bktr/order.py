@@ -12,6 +12,7 @@ class Order(object):
         self.name = 'fas.bktr.Order'
         self.timestamp = timestamp
         self.symbol = symbol
+        print('Order.__init__ symbol={0};'.format(self.symbol))
         self.quant = quant
         self.is_buy = is_buy
         self.order_type = order_type

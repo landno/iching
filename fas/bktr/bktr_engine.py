@@ -1,8 +1,10 @@
 #
 import datetime as dt
 import pandas as pd
+import sys
 from fas.bktr.position import Position
 from fas.bktr.mean_reverting_strategy import MeanRevertingStrategy
+from fas.bktr.order import Order
 from fas.bktr.market_data_source import MarketDataSource
 
 
@@ -22,7 +24,7 @@ class BktrEngine(object):
     def startup(self):
         print('易经量化回测引擎 v0.0.1')
         self.strategy = MeanRevertingStrategy(self.symbol)
-        self.strategy.event_sendorder = self.evthandler_order
+        self.strategy.event_send_order = self.evthandler_order
         mds = MarketDataSource()
         mds.event_tick = self.evthandler_tick
         mds.symbol = self.symbol
@@ -34,11 +36,11 @@ class BktrEngine(object):
 
 
     def get_timestamp(self):
-        return self.current_prices.get_timestamp(self.symbol)
+        tick_data = self.current_prices.get_tick_data(self.symbol)
+        return tick_data.timestamp
 
     def get_trade_date(self):
-        timestamp = self.get_timestamp()
-        return timestamp.strftime('%Y-%m-%d')
+        return str(self.get_timestamp())[:10]
 
     def get_position(self, symbol):
         if symbol not in self.positions:
@@ -61,7 +63,7 @@ class BktrEngine(object):
         self.unfilled_orders.append(order)
         print(self.get_trade_date(), \
             "Received order:", \
-            "BUY" if order.is_buy else "SELL", order.qty, \
+            "BUY" if order.is_buy else "SELL", order.quant, \
             order.symbol
         )
 
@@ -73,18 +75,24 @@ class BktrEngine(object):
 
     def is_order_unmatched(self, order, prices):
         symbol = order.symbol
-        timestamp = prices.get_timestamp(symbol)
-        if order.is_market_order and timestamp > order.timestamp:
+        #timestamp = prices.get_timestamp(symbol)
+        tick_data = prices.get_tick_data(symbol)
+        timestamp = tick_data.timestamp
+        if order.order_type==Order.OT_MARKET_ORDER and timestamp > order.timestamp:
+            print('filled order!!!!!!!!!!!!!!')
             # Order is matched and filled.
             order.is_filled = True
-            open_price = prices.get_open_price(symbol)
+            tick_data = prices.get_tick_data(symbol)
+            open_price = tick_data.open # prices.get_open_price(symbol)
             order.filled_timestamp = timestamp
             order.filled_price = open_price
+            sys.exit(0)
             self.update_filled_position(symbol,
-            order.qty,
-            order.is_buy,
-            open_price,
-            timestamp)
+                order.qty,
+                order.is_buy,
+                open_price,
+                timestamp
+            )
             self.strategy.event_order(order)
             return False
         return True
@@ -104,7 +112,8 @@ class BktrEngine(object):
             )
 
     def evthandler_tick(self, prices):
+        # prices 实际上是market_data
         self.current_prices = prices
         self.strategy.event_tick(prices)
         self.match_order_book(prices)
-        self.print_position_status(self.target_symbol, prices)
+        self.print_position_status(self.symbol, prices)

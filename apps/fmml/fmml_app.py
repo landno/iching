@@ -20,7 +20,7 @@ class FmmlApp(object):
         print('金融市场元学习平台v0.0.8')
         #app = BtApp()
         #app.startup()
-        engine = BktrEngine()
+        engine = BktrEngine('sh600582', '2000-01-01', '2999-12-31')
         engine.startup()
 
 
