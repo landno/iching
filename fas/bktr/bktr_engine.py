@@ -135,8 +135,8 @@ class BktrEngine(object):
         if self.symbol in self.positions:
             position = self.positions[self.symbol]
             tick_data = market_data.get_tick_data(self.symbol)
-            print('日期：{0}； 价格：{1}, {2}, {3}, {4}；持有：{5}; '\
-                '资金：{6}; 未实现损益：{7}; 已实现损益：{8};'.format(
+            print('日期：{0}； 价格：{1:0.2f}, {2:0.2f}, {3:0.2f}, {4:0.2f}；持有：{5}; '\
+                '资金：{6:0.2f}; 未实现损益：{7:0.2f}; 已实现损益：{8:0.2f};'.format(
                     self.get_trade_date(), 
                     tick_data.open, tick_data.high,
                     tick_data.low, tick_data.close,
