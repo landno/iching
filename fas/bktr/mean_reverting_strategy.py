@@ -1,4 +1,5 @@
 # 均值回归策略
+import sys
 import pandas as pd
 from fas.bktr.strategy import Strategy
 
@@ -26,9 +27,9 @@ class MeanRevertingStrategy(Strategy):
         signal_value = self.calculate_z_score()
         timestamp = market_data.get_tick_data(self.symbol).timestamp
         if signal_value < self.buy_threshold:
-            self.on_buy_signal(timestamp)
+            self.on_buy_signal(timestamp, market_data)
         elif signal_value > self.sell_threshold:
-            self.on_sell_signal(timestamp)
+            self.on_sell_signal(timestamp, market_data)
 
     def store_prices(self, market_data):
         tick_data = market_data.get_tick_data(self.symbol)
@@ -47,10 +48,10 @@ class MeanRevertingStrategy(Strategy):
         z_score = ((returns - returns.mean())/returns.std())[-1]
         return z_score
 
-    def on_buy_signal(self, timestamp):
+    def on_buy_signal(self, timestamp, market_data):
         if not self.is_long:
-            self.send_order(timestamp, self.symbol, True, 100)
+            self.send_order(timestamp, market_data, self.symbol, True, 100)
 
-    def on_sell_signal(self, timestamp):
+    def on_sell_signal(self, timestamp, market_data):
         if self.is_long:
-            self.send_order(timestamp, self.symbol, False, 100)
+            self.send_order(timestamp, market_data, self.symbol, False, 100)
