@@ -5,6 +5,7 @@ import sys
 from fas.bktr.position import Position
 from fas.bktr.mean_reverting_strategy import MeanRevertingStrategy
 from fas.bktr.order import Order
+from fas.bktr.market_data import MarketData
 from fas.bktr.market_data_source import MarketDataSource
 
 
@@ -14,6 +15,7 @@ class BktrEngine(object):
         self.symbol = symbol
         self.start_date = start_date
         self.end_date = end_date
+        self.market_data = MarketData()
         self.market_data_sources = [] # 所有的市场数据源
         self.strategy = None 
         self.unfilled_orders = []
@@ -27,22 +29,21 @@ class BktrEngine(object):
         print('易经量化回测引擎 v0.0.1')
         self.strategy = MeanRevertingStrategy(self.symbol)
         self.strategy.event_send_order = self.evthandler_order
-        mds = MarketDataSource()
-        mds.event_tick = self.evthandler_tick
-        mds.symbol = self.symbol
-        # mds.start_market_simulation()
-        
+        mds = MarketDataSource(self.symbol)        
         start_date_str = '2002-05-29'
         end_date_str = '2002-12-31'
         current_date = dt.datetime.strptime(start_date_str, '%Y-%m-%d')
         end_date = dt.datetime.strptime(end_date_str, '%Y-%m-%d')
         while True:
             market_ts = current_date.strftime('%Y-%m-%d')
-            print('current_date: {0};'.format(market_ts))
             delta_date = dt.timedelta(days=1)
             current_date += delta_date
             if current_date > end_date:
                 break
+            tick_data = mds.get_tick_date(self.symbol, market_ts)
+            if tick_data is not None:
+                self.market_data.set_tick_data(self.symbol, tick_data)
+                self.evthandler_tick(self.market_data)
 
 
 
@@ -121,21 +122,11 @@ class BktrEngine(object):
             position.update_unrealized_pnl(close_price)
             self.upnl.loc[self.get_timestamp(), "upnl"] = \
                 position.unrealized_pnl
-            '''
-            print('日期：{0}； 价格：{1}, {2}, {3}, {4}；持有：{5}; '\
-                '资金：{6}; 未实现损益：{7}; 已实现损益：{8};'.format(
-                    self.get_trade_date(), 
-                    tick_data.open, tick_data.high,
-                    tick_data.low, tick_data.close,
-                    position.net_quants, position.position_value,
-                    position.unrealized_pnl, position.realized_pnl
-                ))
-            '''
 
     def evthandler_tick(self, prices):
         # prices 实际上是market_data
         self.current_prices = prices
-        self.strategy.event_tick(prices)
+        self.strategy.event_tick(self, prices)
         self.match_order_book(prices)
         self.update_position_status(self.symbol, prices)
         self.display_current_status(prices)
@@ -152,9 +143,9 @@ class BktrEngine(object):
                     position.net_quants, position.position_value,
                     position.unrealized_pnl, position.realized_pnl
                 ))
-            for order_msg in self.filled_orders:
-                print(order_msg)
-            self.filled_orders = []
             for order_msg in self.issued_orders:
                 print(order_msg)
             self.issued_orders = []
+            for order_msg in self.filled_orders:
+                print(order_msg)
+            self.filled_orders = []

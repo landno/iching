@@ -20,9 +20,10 @@ class MeanRevertingStrategy(Strategy):
             self.is_long = True if position.net_quants > 0 else False
             #self.is_short = True if position.net_quants <= 0 else False
 
-    def event_tick(self, market_data):
+    def event_tick(self, engine, market_data):
         self.store_prices(market_data)
         if len(self.prices) < self.lookback_intervals:
+            engine.display_current_status(market_data)
             return
         signal_value = self.calculate_z_score()
         timestamp = market_data.get_tick_data(self.symbol).timestamp

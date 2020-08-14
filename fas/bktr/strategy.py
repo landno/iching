@@ -6,7 +6,7 @@ class Strategy(object):
         self.name = 'fas.bktr.Strategy'
         self.event_send_order = None
 
-    def event_tick(self, market_data):
+    def event_tick(self, engine, market_data):
         pass
 
     def event_order(self, order):
