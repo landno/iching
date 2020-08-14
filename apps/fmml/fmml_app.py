@@ -4,8 +4,10 @@
 #           INTERPRETABLE TIME SERIES FORECASTING
 # arXiv:2002.02887v1: Meta-learning framework with applications to 
 #           zero-shot time-series forecasting
+import datetime
 import torch
 import backtrader as bt
+import akshare as ak
 from apps.fmml.nbeats_model import NbeatsModel
 from apps.fmml.as1m_ds import As1mDs
 from apps.fmml.bt_app import BtApp
@@ -20,6 +22,13 @@ class FmmlApp(object):
         print('金融市场元学习平台v0.0.8')
         #app = BtApp()
         #app.startup()
+        '''
+        datas = ak.stock_zh_a_daily(symbol='sh600582', adjust='hfq')
+        market_ts = '2002-05-29'
+        open_pds = datas['open']
+        close_pds = datas['close']
+        print('### {0}, {1};'.format(open_pds[market_ts], close_pds[market_ts]))
+        '''
         engine = BktrEngine('sh600582', '2000-01-01', '2999-12-31')
         engine.startup()
 

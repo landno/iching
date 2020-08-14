@@ -9,7 +9,9 @@ class MarketDataSource(object):
         self.event_tick = None
         self.symbol = 'sh600582'
         self.market_data = MarketData()
+        self.datas = ak.stock_zh_a_daily(symbol=self.symbol, adjust='hfq')
 
+    '''
     def start_market_simulation(self):
         datas = ak.stock_zh_a_daily(symbol=self.symbol, adjust='hfq')
         for time, row in datas.iterrows():
@@ -22,3 +24,4 @@ class MarketDataSource(object):
             self.market_data.set_tick_data(self.symbol, tick_data)
             if self.event_tick is not None:
                 self.event_tick(self.market_data)
+    '''

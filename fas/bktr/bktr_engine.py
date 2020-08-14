@@ -30,7 +30,19 @@ class BktrEngine(object):
         mds = MarketDataSource()
         mds.event_tick = self.evthandler_tick
         mds.symbol = self.symbol
-        mds.start_market_simulation()
+        # mds.start_market_simulation()
+        
+        start_date_str = '2002-05-29'
+        end_date_str = '2002-12-31'
+        current_date = dt.datetime.strptime(start_date_str, '%Y-%m-%d')
+        end_date = dt.datetime.strptime(end_date_str, '%Y-%m-%d')
+        while True:
+            market_ts = current_date.strftime('%Y-%m-%d')
+            print('current_date: {0};'.format(market_ts))
+            delta_date = dt.timedelta(days=1)
+            current_date += delta_date
+            if current_date > end_date:
+                break
 
 
 
