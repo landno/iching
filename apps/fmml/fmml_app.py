@@ -29,8 +29,8 @@ class FmmlApp(object):
         close_pds = datas['close']
         print('### {0}, {1};'.format(open_pds[market_ts], close_pds[market_ts]))
         '''
-        engine = BktrEngine('sh600582', '2000-01-01', '2999-12-31')
-        engine.startup()
+        engine = BktrEngine('sh600582', '2002-05-29', '2002-08-31')
+        engine.start_engine()
 
 
 

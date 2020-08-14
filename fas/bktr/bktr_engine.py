@@ -25,30 +25,23 @@ class BktrEngine(object):
         self.issued_orders = []
         self.filled_orders = []
 
-    def startup(self):
-        print('易经量化回测引擎 v0.0.1')
+    def start_engine(self):
+        print('易经量化回测引擎 v0.0.2')
         self.strategy = MeanRevertingStrategy(self.symbol)
         self.strategy.event_send_order = self.evthandler_order
-        mds = MarketDataSource(self.symbol)        
-        start_date_str = '2002-05-29'
-        end_date_str = '2002-12-31'
-        current_date = dt.datetime.strptime(start_date_str, '%Y-%m-%d')
-        end_date = dt.datetime.strptime(end_date_str, '%Y-%m-%d')
+        mds = MarketDataSource(self.symbol)
+        current_date = dt.datetime.strptime(self.start_date, '%Y-%m-%d')
+        end_date_dt = dt.datetime.strptime(self.end_date, '%Y-%m-%d')
         while True:
             market_ts = current_date.strftime('%Y-%m-%d')
             delta_date = dt.timedelta(days=1)
             current_date += delta_date
-            if current_date > end_date:
+            if current_date > end_date_dt:
                 break
             tick_data = mds.get_tick_date(self.symbol, market_ts)
             if tick_data is not None:
                 self.market_data.set_tick_data(self.symbol, tick_data)
                 self.evthandler_tick(self.market_data)
-
-
-
-
-
 
     def get_timestamp(self):
         tick_data = self.current_prices.get_tick_data(self.symbol)
