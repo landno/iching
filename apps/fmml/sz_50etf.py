@@ -9,11 +9,10 @@ class Sz50ETF(object):
     def demo(self):
         option_sina_sse_underlying_spot_price_df = \
                     ak.option_sina_sse_underlying_spot_price(code="sh510050")
-        print(option_sina_sse_underlying_spot_price_df)
         keys = option_sina_sse_underlying_spot_price_df['字段']
         vals = option_sina_sse_underlying_spot_price_df['值']
         for i in range(len(keys)):
-            print('###{0}: {1}={2};'.format(keys[i], vals[i]))
+            print('###{0}: {1}={2};'.format(i, keys[i], vals[i]))
 
 
 
@@ -33,6 +32,7 @@ class Sz50ETF(object):
                     trade_date="202012", symbol="50ETF", exchange="null")
         print(option_sina_sse_expire_day_df)
         '''
+    # 期权合约字段定义
     OCF_Buy_Amount = 0 ###_0 买量: 1;
     OCF_BUY_PRICE = 1 ###_1 买价: 0.7877;
     OCF_LATEST_PRICE = 2 ###_2 最新价: 0.7888;
@@ -76,3 +76,37 @@ class Sz50ETF(object):
     OCF_LOWEST_PRICE = 40 ###_40 最低价: 0.7126;
     OCF_VOLUME = 41 ###_41 成交量: 22;
     OCF_AMOUNT = 42 ###_42 成交额: 162450.00;
+    # 标的物字段
+    AF_BOND_ABST = 0 ###0: 证券简称=50ETF;
+    AF_OPEN = 1 ###1: 今日开盘价=3.352;
+    AF_PREV_CLOSE = 2 ###2: 昨日收盘价=3.343;
+    AF_LATEST_PRICE = 3 ###3: 最近成交价=3.419;
+    AF_HIGHEST_PRICE = 4 ###4: 最高成交价=3.451;
+    AF_LOWEST_PRICE = 5 ###5: 最低成交价=3.348;
+    AF_BUY_PRICE = 6 ###6: 买入价=3.417;
+    AF_SELL_PRICE = 7 ###7: 卖出价=3.418;
+    AF_VOLUME = 8 ###8: 成交数量=995788481;
+    AF_AMOUNT = 9 ###9: 成交金额=3390289098.000;
+    AF_BUY_1_VOLUME = 10 ###10: 买数量一=7100;
+    AF_BUY_1_PRICE = 11 ###11: 买价位一=3.417;
+    AF_BUY_2_VOLUME = 12 ###12: 买数量二=171200;
+    AF_BUY_2_PRICE = 13 ###13: 买价位二=3.416;
+    AF_BUY_3_VOLUME = 14 ###14: 买数量三=700900;
+    AF_BUY_3_PRICE = 15 ###15: 买价位三=3.415;
+    AF_BUY_4_VOLUME = 16 ###16: 买数量四=947100;
+    AF_BUY_4_PRICE = 17 ###17: 买价位四=3.414;
+    AF_BUY_5_VOLUME = 18 ###18: 买数量五=203600;
+    AF_BUY_5_PRICE = 19 ###19: 买价位五=3.413;
+    AF_SELL_1_VOLUME = 20 ###20: 卖数量一=225000;
+    AF_SELL_1_PRICE = 21 ###21: 卖价位一=3.418;
+    AF_SELL_2_VOLUME = 22 ###22: 卖数量二=1251500;
+    AF_SELL_2_PRICE = 23 ###23: 卖价位二=3.420;
+    AF_SELL_3_VOLUME = 24 ###24: 卖数量三=280500;
+    AF_SELL_3_PRICE = 25 ###25: 卖价位三=3.421;
+    AF_SELL_4_VOLUME = 26 ###26: 卖数量四=75400;
+    AF_SELL_4_PRICE = 27 ###27: 卖价位四=3.422;
+    AF_SELL_5_VOLUME = 28 ###28: 卖数量五=249400;
+    AF_SELL_5_PRICE = 29 ###29: 卖价位五=3.423;
+    AF_QUOTATION_DATE = 30 ###30: 行情日期=2020-08-17;
+    AF_QUOTATION_TIME = 31###31: 行情时间=14:59:17;
+    AF_STOP_STATE = 32 ###32: 停牌状态=00;
