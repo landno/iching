@@ -1,37 +1,116 @@
 #
+import numpy as np
+import matplotlib.pyplot as plt
+from pylab import mpl
 import akshare as ak
 
 class Sz50ETF(object):
     def __init__(self):
         self.name = '*'
+        mpl.rcParams['font.sans-serif']=['SimHei']
+        mpl.rcParams['axes.unicode_minus']=False
 
 
     def demo(self):
-        option_sina_sse_underlying_spot_price_df = \
-                    ak.option_sina_sse_underlying_spot_price(code="sh510050")
-        keys = option_sina_sse_underlying_spot_price_df['字段']
-        vals = option_sina_sse_underlying_spot_price_df['值']
-        for i in range(len(keys)):
-            print('###{0}: {1}={2};'.format(i, keys[i], vals[i]))
+        self.option_put_demo()
+
+    def option_call_demo(self):
+        exercise_price = 2.4
+        option_price = 0.148
+        units = 10000
+        plt.figure(figsize=(8,6))
+        plt.subplots_adjust(hspace=1) # 设置子图纵向距离
+        plt.subplot(2, 1, 1)
+        plt.title('认购（看涨）期权买方')
+        ax = plt.gca()  # get current axis 获得坐标轴对象
+        ax.spines['right'].set_color('none')  # 将右边 边沿线颜色设置为空 其实就相当于抹掉这条边
+        ax.spines['top'].set_color('none')
+        ax.xaxis.set_ticks_position('bottom')
+        ax.yaxis.set_ticks_position('left')
+        # 设置中心的为（0，0）的坐标轴
+        ax.spines['bottom'].set_position(('data', 0))  # 指定 data 设置的bottom(也就是指定的x轴)绑定到y轴的0这个点上
+        ax.spines['left'].set_position(('data', 0))
+        # plt.xticks(rotation=45)#x轴数值倾斜45度显示
+        plt.xlim(-0.1, 5.0) #x轴数值设置
+        plt.ylim(-0.2, 2.5)
+        # 认购（看涨）期权买方盈利曲线
+        x11 = np.array([0.0, 2.4])
+        y11 = np.array([-0.1480, -0.1480])
+        plt.plot(x11, y11, 'r-')
+        x12 = np.array([2.4, 4.8])
+        y12 = np.array([-0.1480, (4.8-2.4)-0.148])
+        plt.plot(x12, y12, 'r-')
+        # 认购（看涨）期权卖方盈利曲线
+        plt.subplot(2, 1, 2)
+        plt.title('认购（看涨）期权卖方')
+        ax = plt.gca()  # get current axis 获得坐标轴对象
+        ax.spines['right'].set_color('none')  # 将右边 边沿线颜色设置为空 其实就相当于抹掉这条边
+        ax.spines['top'].set_color('none')
+        ax.xaxis.set_ticks_position('bottom')
+        ax.yaxis.set_ticks_position('left')
+        # 设置中心的为（0，0）的坐标轴
+        ax.spines['bottom'].set_position(('data', 0))  # 指定 data 设置的bottom(也就是指定的x轴)绑定到y轴的0这个点上
+        ax.spines['left'].set_position(('data', 0))
+        # plt.xticks(rotation=45)#x轴数值倾斜45度显示
+        plt.xlim(-0.1, 5.0) #x轴数值设置
+        plt.ylim(-2.5, 0.2)
+        x21 = np.array([0.0, 2.4])
+        y21 = np.array([0.1480, 0.1480])
+        plt.plot(x21, y21, 'b-')
+        x22 = np.array([2.4, 4.8])
+        y22 = np.array([0.1480, (2.4-4.8)+0.1480])
+        plt.plot(x22, y22, 'b-')
+        plt.show()
+
+    def option_put_demo(self):
+        exercise_price = 2.5
+        option_price = 0.15
+        units = 10000
+        plt.figure(figsize=(8,6))
+        plt.subplots_adjust(hspace=1) # 设置子图纵向距离
+        plt.subplot(2, 1, 1)
+        plt.title('认沽（看跌）期权买方')
+        ax = plt.gca()  # get current axis 获得坐标轴对象
+        ax.spines['right'].set_color('none')  # 将右边 边沿线颜色设置为空 其实就相当于抹掉这条边
+        ax.spines['top'].set_color('none')
+        ax.xaxis.set_ticks_position('bottom')
+        ax.yaxis.set_ticks_position('left')
+        # 设置中心的为（0，0）的坐标轴
+        ax.spines['bottom'].set_position(('data', 0))  # 指定 data 设置的bottom(也就是指定的x轴)绑定到y轴的0这个点上
+        ax.spines['left'].set_position(('data', 0))
+        # plt.xticks(rotation=45)#x轴数值倾斜45度显示
+        plt.xlim(-0.1, 5.0) #x轴数值设置
+        plt.ylim(-0.2, 2.5)
+        # 认沽（看跌）期权买方盈利曲线
+        x11 = np.array([2.5, 5])
+        y11 = np.array([-0.15, -0.15])
+        plt.plot(x11, y11, 'r-')
+        x12 = np.array([0.0, 2.5])
+        y12 = np.array([(2.5-0.0)-0.15, -0.15])
+        plt.plot(x12, y12, 'r-')
+        # 认购（看涨）期权卖方盈利曲线
+        plt.subplot(2, 1, 2)
+        plt.title('认沽（看跌）期权卖方')
+        ax = plt.gca()  # get current axis 获得坐标轴对象
+        ax.spines['right'].set_color('none')  # 将右边 边沿线颜色设置为空 其实就相当于抹掉这条边
+        ax.spines['top'].set_color('none')
+        ax.xaxis.set_ticks_position('bottom')
+        ax.yaxis.set_ticks_position('left')
+        # 设置中心的为（0，0）的坐标轴
+        ax.spines['bottom'].set_position(('data', 0))  # 指定 data 设置的bottom(也就是指定的x轴)绑定到y轴的0这个点上
+        ax.spines['left'].set_position(('data', 0))
+        # plt.xticks(rotation=45)#x轴数值倾斜45度显示
+        plt.xlim(-0.1, 5.0) #x轴数值设置
+        plt.ylim(-2.5, 0.2)
+        x21 = np.array([2.5, 5.0])
+        y21 = np.array([0.15, 0.15])
+        plt.plot(x21, y21, 'b-')
+        x22 = np.array([0.0, 2.5])
+        y22 = np.array([(0.0 - 2.5) + 0.15, 0.15])
+        plt.plot(x22, y22, 'b-')
+        plt.show()        
 
 
-
-
-        '''
-        # 获取合约到期月份列表
-        option_sina_sse_list_df = ak.option_sina_sse_list(
-                    symbol="300ETF", exchange="null")
-        print(option_sina_sse_list_df)
-        #
-        option_sina_sse_spot_price_df = ak.option_sina_sse_spot_price(
-                    code="10002271")
-        print(option_sina_sse_spot_price_df)
-        #
-        # 
-        option_sina_sse_expire_day_df = ak.option_sina_sse_expire_day(
-                    trade_date="202012", symbol="50ETF", exchange="null")
-        print(option_sina_sse_expire_day_df)
-        '''
     # 期权合约字段定义
     OCF_Buy_Amount = 0 ###_0 买量: 1;
     OCF_BUY_PRICE = 1 ###_1 买价: 0.7877;
@@ -110,3 +189,17 @@ class Sz50ETF(object):
     AF_QUOTATION_DATE = 30 ###30: 行情日期=2020-08-17;
     AF_QUOTATION_TIME = 31###31: 行情时间=14:59:17;
     AF_STOP_STATE = 32 ###32: 停牌状态=00;
+    # 期权Greeks字段定义
+    GK_ABST = 0 # 0: 期权合约简称=50ETF购12月2550;
+    GK_VOLUME = 1# 1: 成交量=1186;
+    GK_DELTA = 2 # 2: Delta=0.9746;
+    GK_GAMMA = 3 # 3: Gamma=0.1057;
+    GK_THETA = 4 # 4: Theta=-0.1443;
+    GK_VEGA = 5 # 5: Vega=0.12;
+    GK_LATENT_VOLALITY = 6 # 6: 隐含波动率=0.0008;
+    GK_HIGHEST_PRICE = 7 # 7: 最高价=0.8980;
+    GK_LOWEST_PRICE = 8 # 8: 最低价=0.8000;
+    GK_TRADE_CODE = 9 # 9: 交易代码=510050C2012M02550;
+    GK_EXERCISE_PRICE = 10 # 10: 行权价=2.5500;
+    GK_LATEST_PRICE = 11 # 11: 最新价=0.8600;
+    GK_THEORY_PRICE = 12 # 12: 理论价值=0.9092;
