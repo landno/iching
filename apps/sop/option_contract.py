@@ -31,6 +31,8 @@ class OptionContract(object):
         self.contract_unit = SopConfig.contract_unit
         self.exercise_price_delta = SopConfig.exercise_price_delta
         self.settlement_mode = OptionContract.OCSM_CASH
+        #
+        self.quant = 0
         self.price = 0.0
         self.royalty = 0.0 # 权利金
         self.security_deposit = 0.0 # 保证金
@@ -59,3 +61,14 @@ class OptionContract(object):
         else:
             self.security_deposit = 0.0
         return self.security_deposit
+
+    def calculate_gross_profit(self, price):
+        ''' 计算期权不考虑交易费用的盈利 '''
+        gross_profit = 0.0
+        if OptionContract.OCT_CALL == self.option_contract_type \
+                    and OptionContract.SIDE_LONG == self.side:
+            self.royalty = self.price * self.quant * SopConfig.contract_unit
+            gross_profit = self.quant * (price - self.exercise_price) \
+                        * SopConfig.contract_unit - self.royalty
+            print('OptionContract.calculate_gross_profit: {0};'.format(gross_profit))
+        return gross_profit
