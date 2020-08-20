@@ -1,17 +1,13 @@
 #
 from apps.sop.option_contract import OptionContract
+from apps.sop.sop_env import SopEnv
 
 class SopApp(object):
     def __init__(self):
         self.name = ''
 
     def startup(self, args={}):
-        print('股票期权平台 v0.0.3')
-        oc = OptionContract()
-        oc.exercise_price = 2200
-        oc.price = 40
-        oc.option_contract_type = OptionContract.OCT_PUT
-        oc.side = OptionContract.SIDE_SHORT
-        security_deposit = oc.calculate_security_deposit(2150)
-        print(security_deposit)
+        print('股票期权平台 v0.0.4')
+        env = SopEnv()
+        env.startup(args={})
     
