@@ -71,4 +71,10 @@ class OptionContract(object):
             gross_profit = self.quant * (price - self.exercise_price) \
                         * SopConfig.contract_unit - self.royalty
             print('OptionContract.calculate_gross_profit: {0};'.format(gross_profit))
+        elif OptionContract.OCT_CALL == self.option_contract_type \
+                    and OptionContract.SIDE_SHORT == self.side:
+            self.royalty = self.price * self.quant * SopConfig.contract_unit
+            gross_profit = -self.quant * (price - self.exercise_price) \
+                        * SopConfig.contract_unit + self.royalty
+            print('OptionContract.calculate_gross_profit: {0};'.format(gross_profit))
         return gross_profit

@@ -56,8 +56,5 @@ class TOptionContract(unittest.TestCase):
         underlying_asset_price = 41.5
         close_price = 45.5
         oc.price = 1.5
-        oc.royalty = oc.price * oc.quant * SopConfig.contract_unit
-        gross_profit = -oc.quant * (close_price - oc.exercise_price) \
-                    * SopConfig.contract_unit + oc.royalty
-        print('毛利润：{0};'.format(gross_profit))
+        gross_profit = oc.calculate_gross_profit(close_price)
         self.assertTrue(abs(gross_profit+200000)<0.01, '毛利润应该为-200000元')
