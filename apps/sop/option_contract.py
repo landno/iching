@@ -68,7 +68,7 @@ class OptionContract(object):
         if OptionContract.OCT_CALL == self.option_contract_type \
                     and OptionContract.SIDE_LONG == self.side:
             self.royalty = self.price * self.quant * SopConfig.contract_unit
-            gross_profit = - self.royalty
+            gross_profit = -self.royalty
             if price > self.exercise_price:
                 gross_profit += self.quant * (price - self.exercise_price) \
                             * SopConfig.contract_unit 
@@ -82,6 +82,15 @@ class OptionContract(object):
         elif OptionContract.OCT_PUT == self.option_contract_type \
                     and OptionContract.SIDE_LONG == self.side:
             self.royalty = self.price * self.quant * SopConfig.contract_unit
-            gross_profit = self.quant * (self.exercise_price - price) * \
-                        SopConfig.contract_unit - self.royalty
+            gross_profit = -self.royalty
+            if price < self.exercise_price:
+                gross_profit += self.quant * (self.exercise_price - price) * \
+                        SopConfig.contract_unit
+        elif OptionContract.OCT_PUT == self.option_contract_type \
+                    and OptionContract.SIDE_SHORT == self.side:
+            self.royalty = self.price * self.quant * SopConfig.contract_unit
+            gross_profit = self.royalty
+            if price < self.exercise_price:
+                gross_profit -= self.quant * (self.exercise_price - price) * \
+                        SopConfig.contract_unit
         return gross_profit
