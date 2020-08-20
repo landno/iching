@@ -58,3 +58,29 @@ class TOptionContract(unittest.TestCase):
         oc.price = 1.5
         gross_profit = oc.calculate_gross_profit(close_price)
         self.assertTrue(abs(gross_profit+200000)<0.01, '毛利润应该为-200000元')
+
+    def test_calculate_gross_profit3(self):
+        ''' 认购（看涨）期权买家毛利润计算亏损 '''
+        oc = OptionContract()
+        oc.option_contract_type = OptionContract.OCT_CALL
+        oc.side = OptionContract.SIDE_LONG
+        oc.quant = 10
+        oc.exercise_price = 42.0
+        underlying_asset_price = 41.5
+        close_price = 39.0
+        oc.price = 1.5
+        gross_profit = oc.calculate_gross_profit(close_price)
+        self.assertTrue(abs(gross_profit-(-150000))<0.01, '毛利润应该为-150000元')
+
+    def test_calculate_gross_profit4(self):
+        ''' 认购（看涨）期权卖家毛利润计算配合3 '''
+        oc = OptionContract()
+        oc.option_contract_type = OptionContract.OCT_CALL
+        oc.side = OptionContract.SIDE_SHORT
+        oc.quant = 10
+        oc.exercise_price = 42.0
+        underlying_asset_price = 41.5
+        close_price = 39.0
+        oc.price = 1.5
+        gross_profit = oc.calculate_gross_profit(close_price)
+        self.assertTrue(abs(gross_profit-150000)<0.01, '毛利润应该为150000元')
