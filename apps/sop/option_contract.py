@@ -1,4 +1,5 @@
 # 期权合约类
+from apps.sop.sop_config import SopConfig
 
 class OptionContract(object):
     OCT_CALL = 101 # 期权合约类型：认购期权
@@ -14,6 +15,9 @@ class OptionContract(object):
     # 交割方式
     OCSM_GOODS = 401 # 实物
     OCSM_CASH = 402 # 现金
+    # 方向
+    SIDE_LONG = 501 # 认购期权买方和认沽期权买方
+    SIDE_SHORT = 502 # 认购期权卖方和认沽期权卖方
 
     def __init__(self):
         self.name = 'apps.sop.OptionContract'
@@ -24,9 +28,28 @@ class OptionContract(object):
         self.final_date = '2020-12-31'
         self.exercise_price = 0.0
         self.state = OptionContract.OCS_ZERO
-        self.contract_unit = 10000
-        self.exercise_price_delta = 2.0 # 行权价间隔
+        self.contract_unit = SopConfig.contract_unit
+        self.exercise_price_delta = SopConfig.exercise_price_delta
         self.settlement_mode = OptionContract.OCSM_CASH
         self.price = 0.0
         self.royalty = 0.0 # 权利金
         self.security_deposit = 0.0 # 保证金
+        self.side = OptionContract.SIDE_LONG
+
+    def calculate_security_deposit(self, price):
+        '''
+        计算并返回本期权合约的保证金金额
+        '''
+        if OptionContract.OCT_CALL == self.option_contract_type \
+                    and OptionContract.SIDE_SHORT == self.side:
+            v1 = self.price * self.contract_unit + \
+                        price * self.contract_unit * SopConfig.adjust_rate \
+                        - (self.exercise_price - price) * self.contract_unit
+            v2 = self.price * self.contract_unit + \
+                        price * self.contract_unit * SopConfig.min_adjust_rate
+            self.security_deposit = max(v1, v2)
+        elif OptionContract.OCT_PUT == self.option_contract_type and OptionContract.SIDE_SHORT == self.side:
+            self.security_deposit = 0.0
+        else:
+            self.security_deposit = 0.0
+        return self.security_deposit
