@@ -10,7 +10,7 @@ class SopApp(object):
         oc = OptionContract()
         oc.exercise_price = 2200
         oc.price = 40
-        oc.option_contract_type = OptionContract.OCT_CALL
+        oc.option_contract_type = OptionContract.OCT_PUT
         oc.side = OptionContract.SIDE_SHORT
         security_deposit = oc.calculate_security_deposit(2150)
         print(security_deposit)

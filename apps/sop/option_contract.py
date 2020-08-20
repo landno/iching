@@ -49,7 +49,13 @@ class OptionContract(object):
                         price * self.contract_unit * SopConfig.min_adjust_rate
             self.security_deposit = max(v1, v2)
         elif OptionContract.OCT_PUT == self.option_contract_type and OptionContract.SIDE_SHORT == self.side:
-            self.security_deposit = 0.0
+            v1 = self.price * self.contract_unit + \
+                        price * self.contract_unit * SopConfig.adjust_rate \
+                        - (self.exercise_price - price) * self.contract_unit
+            v2 = self.price * self.contract_unit + \
+                        self.exercise_price * self.contract_unit * SopConfig.min_adjust_rate
+            self.security_deposit = max(v1, v2)
+            print('v1={0}; v2={1};'.format(v1, v2))
         else:
             self.security_deposit = 0.0
         return self.security_deposit
