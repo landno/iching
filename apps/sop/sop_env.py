@@ -10,7 +10,7 @@ class SopEnv(gym.Env):
     def startup(self, args={}):
         self.reset()
         num = 0
-        obs, reward, done, info = None, None, None, None
+        obs, reward, done, info = self._next_observation(), 0, False, {}
         while True:
             if num > 10:
                 break
