@@ -3,7 +3,7 @@ import numpy as np
 import gym
 from gym import spaces
 
-class SopEnv(gmy.Env):
+class SopEnv(gym.Env):
     def __init__(self):
         self.refl = ''
 
