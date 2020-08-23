@@ -8,6 +8,7 @@ from apps.asdk.asdk_app import AsdkApp
 from apps.tcv.tcv_app import TcvApp
 from apps.fmml.fmml_app import FmmlApp
 from apps.sop.sop_app import SopApp
+from apps.wxs.wxs_app import WxsApp
 
 
 def norm_batch_tasks(batch_vals, task_num):
@@ -33,7 +34,8 @@ def main():
     #app = AsdkApp()
     #app = TcvApp()
     #app = FmmlApp()
-    app = SopApp()
+    #app = SopApp()
+    app = WxsApp()
     app.startup()
 
 if '__main__' == __name__:
