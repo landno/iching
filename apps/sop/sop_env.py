@@ -8,24 +8,27 @@ from apps.sop.d_50etf_dataset import D50etfDataset
 class SopEnv(gym.Env):
     def __init__(self):
         self.refl = ''
+        self.tick = 0
 
     def startup(self, args={}):
-        ds = D50etfDataset()
+        self.ds = D50etfDataset()
         self.reset()
-        num = 0
         obs, reward, done, info = self._next_observation(), 0, False, {}
-        for step in ds.dates:
-            print('{0}: 由Agent选择行动'.format(step))
+        for dt in self.ds.dates:
+            print('{0}: 由Agent选择行动'.format(dt))
             action = {}
             obs, reward, done, info = self.step(action)
-            num += 1
+            print('##### X:{0}; y:{1};'.format(obs['X'].shape, obs['y'].shape))
+            self.tick += 1
 
     def reset(self):
         print('重置环境到初始状态')
+        self.tick = 0
 
     def _next_observation(self):
         print('返回环境状态...')
-        return {}
+        X, y = self.ds.__getitem__(self.tick)
+        return {'X': X, 'y': y}
 
     def step(self, action):
         self._take_action(action)
