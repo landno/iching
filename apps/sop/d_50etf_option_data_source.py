@@ -17,11 +17,11 @@ class D50etfOptionDataSource(object):
         for ocs in option_codes:
             for option_code in ocs:
                 option_dict[option_code] = self.get_option_daily_quotation(option_code)
-                for dt in option_dict[option_code]:
-                    dates_set.add(dt[0])
-        dates = list(dates_set)
-        list.sort(dates, reverse=False)
-        return dates, option_dict
+                #for dt in option_dict[option_code]:
+                #    dates_set.add(dt[0])
+        #dates = list(dates_set)
+        #list.sort(dates, reverse=False)
+        return option_dict
 
     def get_expire_months(self):
         ''' 获取合约到期月份 '''

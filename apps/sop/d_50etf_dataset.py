@@ -17,17 +17,23 @@ class D50etfDataset(Dataset.Dataset):
 
     def _load_dataset(self):
         d_50etf = D50etfOptionDataSource()
-        self.dates, option_dict = d_50etf.get_data()
-        X = np.array([
-            [1.1, 1.2, 1.3, 1.4, 1.5],
-            [2.1, 2.2, 2.3, 2.4, 2.5],
-            [3.1, 3.2, 3.3, 3.4, 3.5],
-            [4.1, 4.2, 4.3, 4.4, 4.5],
-            [5.1, 5.2, 5.3, 5.4, 5.5],
-            [6.1, 6.2, 6.3, 6.4, 6.5],
-            [7.1, 7.2, 7.3, 7.4, 7.5],
-            [8.1, 8.2, 8.3, 8.4, 8.5],
-            [9.1, 9.2, 9.3, 9.4, 9.5]
-        ])
-        y = np.array([1, 1, 1, 0, 0, 0, 1, 1, 1])
+        option_dict = d_50etf.get_data()
+        # 获取日期列表
+        date_set = set()
+        self.key_list = []
+        for key in option_dict.keys():
+            self.key_list.append(key)
+            for oc in option_dict[key]:
+                date_set.add(oc[0])
+        self.dates = list(date_set)
+        list.sort(self.dates, reverse=False)
+        list.sort(self.key_list, reverse=False)
+        raw_X = []
+        for idx in range(len(self.dates)):
+            for key in self.key_list:
+                oc = option_dict[key]
+                row = [oc[idx][1], oc[idx][2], oc[idx][3], oc[idx][4], oc[idx][5]]
+                raw_X.append(row)
+        X = np.array(raw_X, dtype=np.float32)
+        y = np.zeros((len(self.dates),))
         return torch.from_numpy(X), torch.from_numpy(y)

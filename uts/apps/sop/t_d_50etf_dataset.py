@@ -21,3 +21,8 @@ class TD50etfDataset(unittest.TestCase):
         print('数量：{0};'.format(ds.__len__()))
         X, y = ds.__getitem__(3)
         print('样本：{0} => {1};'.format(X, y))
+
+    def test__load_dataset(self):
+        ds = D50etfDataset()
+        print('X: {0};'.format(ds.X))
+        print('y: {0};'.format(ds.y))
