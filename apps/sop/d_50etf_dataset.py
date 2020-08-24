@@ -8,13 +8,13 @@ from apps.sop.d_50etf_option_data_source import D50etfOptionDataSource
 
 class D50etfDataset(Dataset.Dataset):
     def __init__(self):
-        self.X, self.y = self._load_dataset()
+        self.X, self.y, self.r = self._load_dataset()
 
     def __len__(self):
         return self.X.shape[0]
 
     def __getitem__(self, index):
-        return self.X[index], self.y[index]
+        return self.X[index], self.y[index], self.r[index]
 
     def _load_dataset(self):
         d_50etf = D50etfOptionDataSource()
@@ -43,4 +43,5 @@ class D50etfDataset(Dataset.Dataset):
             raw_X.append(date_row)
         X = np.array(raw_X, dtype=np.float32)
         y = np.zeros((len(self.dates),))
-        return torch.from_numpy(X), torch.from_numpy(y)
+        r = np.zeros((len(self.dates),))
+        return torch.from_numpy(X), torch.from_numpy(y), torch.from_numpy(r)

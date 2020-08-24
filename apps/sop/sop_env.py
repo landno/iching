@@ -18,7 +18,9 @@ class SopEnv(gym.Env):
             print('{0}: 由Agent选择行动'.format(dt))
             action = {}
             obs, reward, done, info = self.step(action)
-            print('##### X:{0}; y:{1};'.format(obs['X'].shape, obs['y'].shape))
+            print('##### X:{0}; y:{1}; r:{2}'.format(obs['X'].shape, 
+                        obs['y'].shape, obs['r'].shape
+                        ))
             self.tick += 1
 
     def reset(self):
@@ -27,8 +29,8 @@ class SopEnv(gym.Env):
 
     def _next_observation(self):
         print('返回环境状态...')
-        X, y = self.ds.__getitem__(self.tick)
-        return {'X': X, 'y': y}
+        X, y, r = self.ds.__getitem__(self.tick)
+        return {'X': X, 'y': y, 'r': r}
 
     def step(self, action):
         self._take_action(action)
