@@ -2,19 +2,20 @@
 import numpy as np
 import gym
 from gym import spaces
+# 
+from apps.sop.d_50etf_dataset import D50etfDataset
 
 class SopEnv(gym.Env):
     def __init__(self):
         self.refl = ''
 
     def startup(self, args={}):
+        ds = D50etfDataset()
         self.reset()
         num = 0
         obs, reward, done, info = self._next_observation(), 0, False, {}
-        while True:
-            if num > 10:
-                break
-            print('由Agent选择行动')
+        for step in ds.dates:
+            print('{0}: 由Agent选择行动'.format(step))
             action = {}
             obs, reward, done, info = self.step(action)
             num += 1

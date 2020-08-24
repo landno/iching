@@ -2,6 +2,8 @@
 import numpy as np
 import torch
 import torch.utils.data.dataset as Dataset
+#
+from apps.sop.d_50etf_option_data_source import D50etfOptionDataSource
 
 class D50etfDataset(Dataset.Dataset):
     def __init__(self):
@@ -14,6 +16,8 @@ class D50etfDataset(Dataset.Dataset):
         return self.X[index], self.y[index]
 
     def _load_dataset(self):
+        d_50etf = D50etfOptionDataSource()
+        self.dates, option_dict = d_50etf.get_data()
         X = np.array([
             [1.1, 1.2, 1.3, 1.4, 1.5],
             [2.1, 2.2, 2.3, 2.4, 2.5],

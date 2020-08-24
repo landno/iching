@@ -21,8 +21,7 @@ class D50etfOptionDataSource(object):
                     dates_set.add(dt[0])
         dates = list(dates_set)
         list.sort(dates, reverse=False)
-        for dt in dates:
-            print('### {0}:'.format(dt))
+        return dates, option_dict
 
     def get_expire_months(self):
         ''' 获取合约到期月份 '''
