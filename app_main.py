@@ -34,8 +34,7 @@ def main():
     #app = AsdkApp()
     #app = TcvApp()
     #app = FmmlApp()
-    #app = SopApp()
-    app = WxsApp()
+    app = SopApp()
     app.startup()
 
 if '__main__' == __name__:
