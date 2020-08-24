@@ -1,4 +1,5 @@
 # 50ETF日行情数据集类
+import sys
 import numpy as np
 import torch
 import torch.utils.data.dataset as Dataset
@@ -30,13 +31,16 @@ class D50etfDataset(Dataset.Dataset):
         list.sort(self.key_list, reverse=False)
         raw_X = []
         for idx in range(len(self.dates)):
+            date_row = []
             for key in self.key_list:
                 oc = option_dict[key]
                 if len(oc) > idx:
-                    row = [oc[idx][1], oc[idx][2], oc[idx][3], oc[idx][4], oc[idx][5]]
+                    date_row += [float(oc[idx][1]), float(oc[idx][2]), 
+                                float(oc[idx][3]), float(oc[idx][4]), 
+                                float(oc[idx][5])]
                 else:
-                    row = [0.0, 0.0, 0.0, 0.0, 0.0]
-                raw_X.append(row)
+                    date_row += [0.0, 0.0, 0.0, 0.0, 0.0]
+            raw_X.append(date_row)
         X = np.array(raw_X, dtype=np.float32)
         y = np.zeros((len(self.dates),))
         return torch.from_numpy(X), torch.from_numpy(y)

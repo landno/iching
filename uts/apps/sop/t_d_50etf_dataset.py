@@ -24,5 +24,5 @@ class TD50etfDataset(unittest.TestCase):
 
     def test__load_dataset(self):
         ds = D50etfDataset()
-        print('X: {0};'.format(ds.X))
-        print('y: {0};'.format(ds.y))
+        print('X: {0};'.format(ds.X.shape))
+        print('y: {0};'.format(ds.y.shape))
