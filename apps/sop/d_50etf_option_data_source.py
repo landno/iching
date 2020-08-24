@@ -13,14 +13,14 @@ class D50etfOptionDataSource(object):
         option_dict = {}
         expire_months = self.get_expire_months()
         option_codes = self.get_option_codes(expire_months[1])
-        dates = set()
+        dates_set = set()
         for ocs in option_codes:
             for option_code in ocs:
                 option_dict[option_code] = self.get_option_daily_quotation(option_code)
-                for dt in option_dict[option_code][0]:
-                    dates.append
-        for dt in option_dict[option_codes[0][0]]:
-            dates.append(dt[0])
+                for dt in option_dict[option_code]:
+                    dates_set.add(dt[0])
+        dates = list(dates_set)
+        list.sort(dates, reverse=False)
         for dt in dates:
             print('### {0}:'.format(dt))
 
