@@ -32,7 +32,10 @@ class D50etfDataset(Dataset.Dataset):
         for idx in range(len(self.dates)):
             for key in self.key_list:
                 oc = option_dict[key]
-                row = [oc[idx][1], oc[idx][2], oc[idx][3], oc[idx][4], oc[idx][5]]
+                if len(oc) > idx:
+                    row = [oc[idx][1], oc[idx][2], oc[idx][3], oc[idx][4], oc[idx][5]]
+                else:
+                    row = [0.0, 0.0, 0.0, 0.0, 0.0]
                 raw_X.append(row)
         X = np.array(raw_X, dtype=np.float32)
         y = np.zeros((len(self.dates),))
