@@ -3,7 +3,7 @@ import numpy as np
 import gym
 from gym import spaces
 # 
-from apps.sop.d_50etf_dataset import D50etfDataset
+from apps.sop.sh50etf_dataset import Sh50etfDataset
 
 class SopEnv(gym.Env):
     def __init__(self):
@@ -11,7 +11,7 @@ class SopEnv(gym.Env):
         self.tick = 0
 
     def startup(self, args={}):
-        self.ds = D50etfDataset()
+        self.ds = Sh50etfDataset()
         self.reset()
         obs, reward, done, info = self._next_observation(), 0, False, {}
         for dt in self.ds.dates:

@@ -2,7 +2,7 @@
 import numpy as np
 import akshare as ak
 
-class D50etfOptionDataSource(object):
+class Sh50etfOptionDataSource(object):
     CALL_OPTION_IDX = 0
     PUT_OPTION_IDX = 1
     CALL_OPTION = 101 # 认购期权
@@ -19,15 +19,15 @@ class D50etfOptionDataSource(object):
         expire_months = self.get_expire_months()
         option_codes = self.get_option_codes(expire_months[1])
         dates_set = set()
-        for option_code in option_codes[D50etfOptionDataSource.\
+        for option_code in option_codes[Sh50etfOptionDataSource.\
                         CALL_OPTION_IDX]:
             option_dict[option_code] = self.get_option_daily_quotation(
-                option_code, D50etfOptionDataSource.CALL_OPTION
+                option_code, Sh50etfOptionDataSource.CALL_OPTION
             )
-        for option_code in option_codes[D50etfOptionDataSource.\
+        for option_code in option_codes[Sh50etfOptionDataSource.\
                         PUT_OPTION_IDX]:
             option_dict[option_code] = self.get_option_daily_quotation(
-                option_code, D50etfOptionDataSource.PUT_OPTION
+                option_code, Sh50etfOptionDataSource.PUT_OPTION
             )
         return option_dict
 
@@ -53,13 +53,13 @@ class D50etfOptionDataSource(object):
         closes = df['收盘']
         volumes = df['成交']
         for i in range(len(dates)):
-            if D50etfOptionDataSource.CALL_OPTION == option_type:
+            if Sh50etfOptionDataSource.CALL_OPTION == option_type:
                 X.append([
                     0.0, 0.0, 0.0,
                     dates[i], opens[i], highs[i], 
                     lows[i], closes[i], volumes[i]
                 ])
-            elif D50etfOptionDataSource.CALL_OPTION == option_type:
+            elif Sh50etfOptionDataSource.CALL_OPTION == option_type:
                 X.append([
                     1.0, 0.0, 0.0,
                     dates[i], opens[i], highs[i], 

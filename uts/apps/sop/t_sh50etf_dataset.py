@@ -1,7 +1,7 @@
 # D50etfDataset测试类
 import unittest
 import torch.utils.data.dataloader as DataLoader
-from apps.sop.d_50etf_dataset import D50etfDataset
+from apps.sop.sh50etf_dataset import Sh50etfDataset
 
 class TD50etfDataset(unittest.TestCase):
     @classmethod
@@ -13,7 +13,7 @@ class TD50etfDataset(unittest.TestCase):
         pass
 
     def test_getitem(self):
-        ds = D50etfDataset()
+        ds = Sh50etfDataset()
         dataloader = DataLoader.DataLoader(ds, batch_size= 2, 
                     shuffle = True, num_workers= 4)
         for idx, (X, y) in enumerate(dataloader):
@@ -23,6 +23,6 @@ class TD50etfDataset(unittest.TestCase):
         print('样本：{0} => {1};'.format(X, y))
 
     def test__load_dataset(self):
-        ds = D50etfDataset()
+        ds = Sh50etfDataset()
         print('X: {0};'.format(ds.X.shape))
         print('y: {0};'.format(ds.y.shape))

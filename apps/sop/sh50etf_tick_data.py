@@ -1,7 +1,7 @@
 # 
 from apps.sop.tick_data import TickData
 
-class D50etfTickData(TickData):
+class Sh50etfTickData(TickData):
     def __init__(self, symbol, timestamp, 
                 trade_date,
                 open_price=0.0, 
@@ -16,7 +16,7 @@ class D50etfTickData(TickData):
         close 收盘价
         volume 成交量
         '''
-        super(D50etfTickData, self).__init__(symbol, timestamp)
+        super(Sh50etfTickData, self).__init__(symbol, timestamp)
         self.trade_date = trade_date
         self.open = open_price
         self.high = high_price

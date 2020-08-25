@@ -4,9 +4,9 @@ import numpy as np
 import torch
 import torch.utils.data.dataset as Dataset
 #
-from apps.sop.d_50etf_option_data_source import D50etfOptionDataSource
+from apps.sop.sh50etf_option_data_source import Sh50etfOptionDataSource
 
-class D50etfDataset(Dataset.Dataset):
+class Sh50etfDataset(Dataset.Dataset):
     def __init__(self):
         self.X, self.y, self.r = self._load_dataset()
 
@@ -17,7 +17,7 @@ class D50etfDataset(Dataset.Dataset):
         return self.X[index], self.y[index], self.r[index]
 
     def _load_dataset(self):
-        d_50etf = D50etfOptionDataSource()
+        d_50etf = Sh50etfOptionDataSource()
         option_dict = d_50etf.get_data()
         # 获取日期列表
         date_set = set()
