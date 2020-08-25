@@ -1,8 +1,8 @@
 # Sh50etfStockDataSource测试类
 import unittest
-from apps.sop.ds.sh50etf_stock_data_source import Sh50etfStockDataSource
+from apps.sop.ds.sh50etf_index_data_source import Sh50etfIndexDataSource
 
-class TSh50etfStockDataSource(unittest.TestCase):
+class TSh50etfIndexDataSource(unittest.TestCase):
     @classmethod
     def setUp(cls):
         pass
@@ -12,5 +12,5 @@ class TSh50etfStockDataSource(unittest.TestCase):
         pass
 
     def test_get_daily_data(self):
-        ds = Sh50etfStockDataSource()
+        ds = Sh50etfIndexDataSource()
         ds.get_daily_data('2020-06-01', '2020-06-23')
