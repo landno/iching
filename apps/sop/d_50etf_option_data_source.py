@@ -3,6 +3,11 @@ import numpy as np
 import akshare as ak
 
 class D50etfOptionDataSource(object):
+    CALL_OPTION_IDX = 0
+    PUT_OPTION_IDX = 1
+    CALL_OPTION = 101 # 认购期权
+    PUT_OPTION = 102 # 认沽期权
+
     def __init__(self):
         self.refl = ''
         self.symbol = '50ETF'
@@ -14,13 +19,16 @@ class D50etfOptionDataSource(object):
         expire_months = self.get_expire_months()
         option_codes = self.get_option_codes(expire_months[1])
         dates_set = set()
-        for ocs in option_codes:
-            for option_code in ocs:
-                option_dict[option_code] = self.get_option_daily_quotation(option_code)
-                #for dt in option_dict[option_code]:
-                #    dates_set.add(dt[0])
-        #dates = list(dates_set)
-        #list.sort(dates, reverse=False)
+        for option_code in option_codes[D50etfOptionDataSource.\
+                        CALL_OPTION_IDX]:
+            option_dict[option_code] = self.get_option_daily_quotation(
+                option_code, D50etfOptionDataSource.CALL_OPTION
+            )
+        for option_code in option_codes[D50etfOptionDataSource.\
+                        PUT_OPTION_IDX]:
+            option_dict[option_code] = self.get_option_daily_quotation(
+                option_code, D50etfOptionDataSource.PUT_OPTION
+            )
         return option_dict
 
     def get_expire_months(self):
@@ -35,7 +43,7 @@ class D50etfOptionDataSource(object):
         return ak.option_sina_sse_codes(trade_date=trade_date,
                      underlying=self.underlying)
 
-    def get_option_daily_quotation(self, option_code):
+    def get_option_daily_quotation(self, option_code, option_type):
         df = ak.option_sina_sse_daily(code=option_code)
         X = []
         dates = df['日期']
@@ -45,5 +53,16 @@ class D50etfOptionDataSource(object):
         closes = df['收盘']
         volumes = df['成交']
         for i in range(len(dates)):
-            X.append([dates[i], opens[i], highs[i], lows[i], closes[i], volumes[i]])
+            if D50etfOptionDataSource.CALL_OPTION == option_type:
+                X.append([
+                    0.0, 0.0, 0.0,
+                    dates[i], opens[i], highs[i], 
+                    lows[i], closes[i], volumes[i]
+                ])
+            elif D50etfOptionDataSource.CALL_OPTION == option_type:
+                X.append([
+                    1.0, 0.0, 0.0,
+                    dates[i], opens[i], highs[i], 
+                    lows[i], closes[i], volumes[i]
+                ])
         return np.array(X)

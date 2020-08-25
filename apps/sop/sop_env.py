@@ -15,11 +15,14 @@ class SopEnv(gym.Env):
         self.reset()
         obs, reward, done, info = self._next_observation(), 0, False, {}
         for dt in self.ds.dates:
-            print('{0}: 由Agent选择行动'.format(dt))
+            print('{0}: '.format(dt))
             action = {}
             obs, reward, done, info = self.step(action)
-            print('##### X:{0}; y:{1}; r:{2}'.format(obs['X'].shape, 
-                        obs['y'].shape, obs['r'].shape
+            X = obs['X'].cpu().numpy()
+            y = obs['y'].cpu().numpy()
+            r = obs['r'].cpu().numpy()
+            print('    X:{0}; y:{1}; r:{2}'.format(X.shape, 
+                        y, r
                         ))
             self.tick += 1
 
@@ -28,7 +31,6 @@ class SopEnv(gym.Env):
         self.tick = 0
 
     def _next_observation(self):
-        print('返回环境状态...')
         X, y, r = self.ds.__getitem__(self.tick)
         return {'X': X, 'y': y, 'r': r}
 
@@ -40,4 +42,4 @@ class SopEnv(gym.Env):
         return obs, reward, done, {}
 
     def _take_action(self, action):
-        print('执行所选行动，生成订单，调用broker执行订单')
+        pass
