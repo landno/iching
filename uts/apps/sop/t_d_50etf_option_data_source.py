@@ -31,7 +31,7 @@ class TD50etfOptionDataSource(unittest.TestCase):
 
     def test_get_data(self):
         ds = D50etfOptionDataSource()
-        dates, option_dict = ds.get_data()
+        option_dict = ds.get_data()
         for key in option_dict.keys():
             ocs = option_dict[key]
             print(ocs)
