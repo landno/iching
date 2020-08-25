@@ -55,14 +55,14 @@ class Sh50etfOptionDataSource(object):
         for i in range(len(dates)):
             if Sh50etfOptionDataSource.CALL_OPTION == option_type:
                 X.append([
-                    0.0, 0.0, 0.0,
-                    dates[i], opens[i], highs[i], 
+                    dates[i], 0.0, 0.0, 0.0,
+                    opens[i], highs[i], 
                     lows[i], closes[i], volumes[i]
                 ])
             elif Sh50etfOptionDataSource.CALL_OPTION == option_type:
                 X.append([
-                    1.0, 0.0, 0.0,
-                    dates[i], opens[i], highs[i], 
+                    dates[i], 1.0, 0.0, 0.0,
+                    opens[i], highs[i], 
                     lows[i], closes[i], volumes[i]
                 ])
         return np.array(X)

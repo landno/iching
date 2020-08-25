@@ -3,7 +3,7 @@ import unittest
 import torch.utils.data.dataloader as DataLoader
 from apps.sop.sh50etf_dataset import Sh50etfDataset
 
-class TD50etfDataset(unittest.TestCase):
+class TSh50etfDataset(unittest.TestCase):
     @classmethod
     def setUp(cls):
         pass

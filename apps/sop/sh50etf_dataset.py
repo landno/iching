@@ -37,9 +37,10 @@ class Sh50etfDataset(Dataset.Dataset):
                 if len(oc) > idx:
                     date_row += [float(oc[idx][1]), float(oc[idx][2]), 
                                 float(oc[idx][3]), float(oc[idx][4]), 
-                                float(oc[idx][5])]
+                                float(oc[idx][5]), float(oc[idx][5]),
+                                float(oc[idx][6]), float(oc[idx][7])]
                 else:
-                    date_row += [0.0, 0.0, 0.0, 0.0, 0.0]
+                    date_row += [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
             raw_X.append(date_row)
         X = np.array(raw_X, dtype=np.float32)
         y = np.zeros((len(self.dates),))
